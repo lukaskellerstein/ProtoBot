@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four Autonomous SDLC Systems — A Comparison</title>
+<style>
+  :root {
+    --paper:        #E7EAE3;
+    --panel:        #F0F2EC;
+    --sunk:         #DDE1D8;
+    --ink:          #171B18;
+    --body:         #333A34;
+    --graphite:     #656E63;
+    --rule:         #C4CBBF;
+    --hairline:     #D4DACD;
+
+    --p-proto:      #3F6394;
+    --p-dex:        #23705F;
+    --p-forge:      #A8481F;
+    --p-full:       #8A6A1C;
+
+    --good:         #26654F;
+    --good-bg:      #DCE7DF;
+    --watch:        #7E6413;
+    --watch-bg:     #EAE6D0;
+    --risk:         #97401C;
+    --risk-bg:      #EEDFD6;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #141715;
+      --panel:     #1C201D;
+      --sunk:      #232823;
+      --ink:       #E8ECE5;
+      --body:      #C3CABF;
+      --graphite:  #8B948A;
+      --rule:      #333A34;
+      --hairline:  #2A302B;
+
+      --p-proto:   #7FA6D8;
+      --p-dex:     #52B398;
+      --p-forge:   #DE8358;
+      --p-full:    #C9A648;
+
+      --good:      #6FBF9C;
+      --good-bg:   #1B2A24;
+      --watch:     #C9AE55;
+      --watch-bg:  #2A2618;
+      --risk:      #E08A62;
+      --risk-bg:   #2E1F19;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:     #141715;
+    --panel:     #1C201D;
+    --sunk:      #232823;
+    --ink:       #E8ECE5;
+    --body:      #C3CABF;
+    --graphite:  #8B948A;
+    --rule:      #333A34;
+    --hairline:  #2A302B;
+
+    --p-proto:   #7FA6D8;
+    --p-dex:     #52B398;
+    --p-forge:   #DE8358;
+    --p-full:    #C9A648;
+
+    --good:      #6FBF9C;
+    --good-bg:   #1B2A24;
+    --watch:     #C9AE55;
+    --watch-bg:  #2A2618;
+    --risk:      #E08A62;
+    --risk-bg:   #2E1F19;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background: var(--paper);
+    color: var(--body);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 clamp(1.1rem, 4vw, 3.5rem) 6rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet { max-width: 1180px; margin: 0 auto; }
+
+  /* ---- title block ---- */
+
+  .titleblock {
+    border-bottom: 2px solid var(--ink);
+    padding: clamp(2.2rem, 6vw, 4rem) 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--graphite);
+  }
+
+  h1 {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5.4vw, 3.4rem);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+
+  .standfirst {
+    max-width: var(--measure);
+    font-size: 1.05rem;
+    color: var(--body);
+    margin: 0;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2.2rem;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--graphite);
+    padding-top: 0.3rem;
+    border-top: 1px solid var(--hairline);
+  }
+  .meta b { color: var(--ink); font-weight: 600; }
+
+  /* ---- sections ---- */
+
+  section { padding-top: 3.6rem; }
+
+  .sechead {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.55rem;
+    margin-bottom: 1.7rem;
+  }
+  .plate {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    color: var(--graphite);
+    letter-spacing: 0.08em;
+    flex: none;
+  }
+  h2 {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: clamp(1.4rem, 3vw, 1.85rem);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-size: 1.16rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+
+  p { max-width: var(--measure); margin: 0 0 1.05rem; }
+  p:last-child { margin-bottom: 0; }
+
+  a { color: inherit; text-decoration-color: var(--rule); text-underline-offset: 2px; }
+  a:hover { text-decoration-color: currentColor; }
+  :focus-visible { outline: 2px solid var(--p-dex); outline-offset: 3px; }
+
+  strong { color: var(--ink); font-weight: 600; }
+  em { font-style: italic; }
+
+  code, .mono {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.87em;
+  }
+  code {
+    background: var(--sunk);
+    padding: 0.08em 0.34em;
+    border-radius: 2px;
+    color: var(--ink);
+  }
+
+  /* ---- tables ---- */
+
+  .scroll {
+    overflow-x: auto;
+    margin: 0 0 1.6rem;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 780px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.62rem 0.9rem 0.62rem 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  tr:last-child td { border-bottom: none; }
+  thead th {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    font-weight: 500;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+    white-space: nowrap;
+  }
+  tbody th {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.85rem;
+    width: 15%;
+    padding-right: 1.2rem;
+  }
+  td { color: var(--body); }
+
+  .swatch {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 1px;
+    margin-right: 0.45em;
+    vertical-align: 0.02em;
+  }
+  .s-proto { background: var(--p-proto); }
+  .s-dex   { background: var(--p-dex); }
+  .s-forge { background: var(--p-forge); }
+  .s-full  { background: var(--p-full); }
+
+  /* ---- verdict pills ---- */
+
+  .pill {
+    display: inline-block;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.63rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    padding: 0.16em 0.5em;
+    border-radius: 2px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .p-good  { background: var(--good-bg);  color: var(--good); }
+  .p-watch { background: var(--watch-bg); color: var(--watch); }
+  .p-risk  { background: var(--risk-bg);  color: var(--risk); }
+
+  /* ---- finding lists ---- */
+
+  .findings { display: flex; flex-direction: column; gap: 1.25rem; margin: 0 0 1.6rem; padding: 0; list-style: none; }
+  .findings > li { max-width: var(--measure); }
+  .findings .lead {
+    display: flex; align-items: baseline; gap: 0.6rem;
+    margin-bottom: 0.28rem; flex-wrap: wrap;
+  }
+  .findings .lead b { color: var(--ink); font-weight: 600; font-size: 1rem; }
+  .findings p { margin: 0; }
+
+  /* ---- project panels ---- */
+
+  .project {
+    background: var(--panel);
+    border-left: 3px solid var(--accent, var(--rule));
+    padding: 1.5rem 1.6rem;
+    margin-bottom: 1.6rem;
+  }
+  .project.proto { --accent: var(--p-proto); }
+  .project.dex   { --accent: var(--p-dex); }
+  .project.forge { --accent: var(--p-forge); }
+  .project.full  { --accent: var(--p-full); }
+
+  .project h3 { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.15rem; }
+  .project h3 .tag {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); font-weight: 500;
+  }
+  .project > p.summary { color: var(--body); margin-bottom: 1.25rem; }
+
+  .subhead {
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.67rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--graphite); margin: 1.4rem 0 0.7rem;
+    padding-bottom: 0.3rem; border-bottom: 1px solid var(--hairline);
+  }
+  .project .subhead:first-of-type { margin-top: 0; }
+
+  ul.tight { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  ul.tight li { max-width: calc(var(--measure) - 2ch); }
+  ul.tight li::marker { color: var(--graphite); }
+
+  .callout {
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent, var(--graphite));
+    background: var(--panel);
+    padding: 1.05rem 1.25rem;
+    margin: 0 0 1.5rem;
+    max-width: var(--measure);
+  }
+  .callout p { margin-bottom: 0.6rem; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .subhead { margin-top: 0; }
+
+  .footnote {
+    font-size: 0.83rem;
+    color: var(--graphite);
+    max-width: var(--measure);
+    border-top: 1px solid var(--hairline);
+    padding-top: 0.9rem;
+    margin-top: 2rem;
+  }
+
+  hr.rule {
+    border: none;
+    border-top: 2px solid var(--ink);
+    margin: 3.5rem 0 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+<header class="titleblock">
+  <div class="eyebrow">Architecture review · autonomous SDLC systems</div>
+  <h1>Four takes on the same problem</h1>
+  <p class="standfirst">ProtoBot, DEX, Forge and Fullsend all try to turn human intent into merged code with agents doing the work in between. They disagree about almost nothing structural and almost everything else. This is what they share, where they split, and which of them is right at each fork.</p>
+  <div class="meta">
+    <span><b>Read</b> ProtoBot design docs · dex · forge · fullsend</span>
+    <span><b>Basis</b> repository source + design docs</span>
+    <span><b>Date</b> 11 Aug 2026</span>
+  </div>
+</header>
+
+<section>
+  <div class="sechead"><span class="plate">00</span><h2>The four, side by side</h2></div>
+
+  <p>The most important row is the first one. ProtoBot is a design document; the other three are running systems. That asymmetry colours everything below — ProtoBot gets judged on whether its ideas are right, the others on whether their execution is.</p>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col"><span class="swatch s-proto"></span>ProtoBot</th>
+          <th scope="col"><span class="swatch s-dex"></span>DEX</th>
+          <th scope="col"><span class="swatch s-forge"></span>Forge</th>
+          <th scope="col"><span class="swatch s-full"></span>Fullsend</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Maturity</th>
+          <td>Design draft. ~2,900 lines of markdown, no code.</td>
+          <td>Working Electron app. 14 shipped specs, mock + replay test harness.</td>
+          <td>Production Python service. 31 workflow nodes, 5 approval gates.</td>
+          <td>Production Go platform. 80+ ADRs, e2e suite, eval harness.</td>
+        </tr>
+        <tr>
+          <th scope="row">Intake</th>
+          <td>EARS requirements handed over from IdeaBot</td>
+          <td>Free-form project description, clarified interactively</td>
+          <td>Jira ticket (Feature / Bug / Task)</td>
+          <td>Git issue — GitHub, GitLab, Forgejo</td>
+        </tr>
+        <tr>
+          <th scope="row">Unit of intent</th>
+          <td>An EARS requirement in a validated store</td>
+          <td>A spec-kit feature (spec / plan / tasks)</td>
+          <td>A generated artifact chain: PRD → spec → epic → task</td>
+          <td>The issue title and body. Nothing more.</td>
+        </tr>
+        <tr>
+          <th scope="row">Output</th>
+          <td>Disposable demo prototype + demo artifacts</td>
+          <td>Implemented feature on a run branch</td>
+          <td>Reviewed pull requests, possibly cross-repo</td>
+          <td>Merged pull request</td>
+        </tr>
+        <tr>
+          <th scope="row">Orchestrator</th>
+          <td>"Job Site" — pull-based, undesigned</td>
+          <td>Node.js main-loop, deterministic stage machine</td>
+          <td>LangGraph state machine, Redis-checkpointed</td>
+          <td>Scripted pipeline running inside CI</td>
+        </tr>
+        <tr>
+          <th scope="row">Human gate</th>
+          <td>One, early: approve the EARS Schematic. Then fully autonomous through merge.</td>
+          <td>One, early: clarification. Then post-hoc control via the timeline.</td>
+          <td>Five gates plus mandatory human PR review before merge.</td>
+          <td>Configurable — labels and slash commands; can reach auto-merge.</td>
+        </tr>
+        <tr>
+          <th scope="row">Isolation unit</th>
+          <td>Worker per role, sub-branch per Worker</td>
+          <td>Fresh agent per stage</td>
+          <td>Ephemeral Podman container per task</td>
+          <td>One sandbox per agent, per step</td>
+        </tr>
+        <tr>
+          <th scope="row">Credentials</th>
+          <td>Intends OpenShell + Bridge/Gate. Not designed.</td>
+          <td>None. Runs on your laptop as you.</td>
+          <td>Container gets LLM creds only; no Jira/GitHub/Redis.</td>
+          <td>Zero credentials in sandbox by default. Prefetch in, post-script out.</td>
+        </tr>
+        <tr>
+          <th scope="row">State of record</th>
+          <td>Git for content, issue tracker for lifecycle</td>
+          <td>Git refs authoritative, JSON as cache. No database.</td>
+          <td>Redis, keyed by ticket. Single point of failure.</td>
+          <td>The forge itself — issues, labels, PRs. No central state.</td>
+        </tr>
+        <tr>
+          <th scope="row">Deployment</th>
+          <td>Wants local single-player <em>and</em> OpenShift multi-player</td>
+          <td>Desktop app. Zero infrastructure, zero multiplayer.</td>
+          <td>FastAPI + Redis + Podman host. Heaviest.</td>
+          <td>A CI job. No server at all.</td>
+        </tr>
+        <tr>
+          <th scope="row">Verification</th>
+          <td>Dual-model isolation + mutation testing as hidden gate</td>
+          <td>Single verify stage: build, tests, browser MCP</td>
+          <td>Local AI review → CI fix loop → AI review → human</td>
+          <td>Read-only review agent fanning out across six dimensions</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="sechead"><span class="plate">01</span><h2>What all four already agree on</h2></div>
+
+  <p>These were reached independently, by four teams, from different starting points. That makes them close to settled answers rather than opinions — and it means any new design that contradicts them needs a strong reason.</p>
+
+  <ol class="findings">
+    <li>
+      <div class="lead"><b>The orchestrator is code, never an LLM.</b></div>
+      <p>Fullsend states it outright in ADR&nbsp;0018 after a coordinator agent silently skipped declared subagents and improvised — stronger prompting reduced but never eliminated it. Forge calls the same thing "workflow first, agents second". DEX makes feature selection a deterministic read of <code>feature-manifest.json</code> with no model call at all, and constrains its one LLM decision point to five enum values. ProtoBot gives the Job Site ownership of dispatch. Everyone converged on: <em>agents do bounded domain work, code decides what runs.</em></p>
+    </li>
+    <li>
+      <div class="lead"><b>Bounded context per unit of work.</b></div>
+      <p>Fresh agent per stage (DEX), one agent per step (Fullsend), ephemeral container per task (Forge), Worker per work item (ProtoBot). Nobody defends the long-lived session. DEX cites the Ralph Wiggum loop, ProtoBot cites Yegge's agent-dementia writeup — same conclusion.</p>
+    </li>
+    <li>
+      <div class="lead"><b>Structured handoffs, not prose.</b></div>
+      <p>DEX uses JSON-schema-constrained output at the boundaries that matter. Fullsend enforces output schema at the harness level with a two-retry validation loop. ProtoBot wants <code>ears-manager</code> precisely so agents stop re-interpreting prose after every compaction. All three cite the same underlying failure: markdown plans get re-decomposed, schemas don't.</p>
+    </li>
+    <li>
+      <div class="lead"><b>Agents never write directly to external systems.</b></div>
+      <p>Forge: implementation agents write only inside their container; the integration layer performs Jira and GitHub mutations at explicit workflow steps. Fullsend: pre-script fetches, sandbox reasons, post-script mutates — and the sandbox holds no credentials to mutate with. ProtoBot adopted this pattern explicitly from Fullsend. It is the strongest security consensus in the set.</p>
+    </li>
+    <li>
+      <div class="lead"><b>Review is a parallel fan-out, not one pass.</b></div>
+      <p>Fullsend's review orchestrator dispatches concurrent sub-agents per dimension — correctness, security, intent, style, docs currency — then deduplicates and synthesises. ProtoBot's Inspector roster is the same shape. Forge runs local review, then implement-review, then AI review as distinct nodes. DEX is the outlier here, and it costs it (see 03).</p>
+    </li>
+    <li>
+      <div class="lead"><b>Git is the audit substrate.</b></div>
+      <p>ProtoBot commits to merge commits all the way down so the full iteration history stays a navigable DAG. DEX writes a machine-parseable <code>[checkpoint:step:cycle]</code> trailer on every stage commit. Forge and Fullsend reflect everything back into the tracker and the PR. Nobody built a bespoke event store.</p>
+    </li>
+  </ol>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="sechead"><span class="plate">02</span><h2>Where they genuinely split</h2></div>
+
+  <h3>Axis 1 — What is the durable source of truth for intent?</h3>
+  <p>This is the deepest divergence in the set, and the two extremes are ProtoBot and Fullsend.</p>
+  <p><strong>ProtoBot</strong> makes the specification the product: EARS requirements in a machine-validated, queryable store, with code as a regenerable artifact. <strong>Fullsend</strong> takes the opposite position — intent is the issue title and body, deliberately excluding the comment thread to stay bounded and injection-resistant. <strong>Forge</strong> sits between: intent is a chain of generated artifacts, each individually human-approved. <strong>DEX</strong> uses spec-kit specs — structured, but prose, with no well-formedness gate.</p>
+  <p>Fullsend has an entire unsolved-problem document named <code>intent-representation.md</code>. They know this is their weak flank. ProtoBot is the only one of the four attacking it directly, and that is its single most valuable contribution.</p>
+
+  <h3>Axis 2 — Where does the human stand?</h3>
+  <p>ProtoBot places one gate early and then goes fully autonomous through merge. Forge places five gates plus a mandatory human PR review. That is a wide spread — and it is <em>inverted relative to the stakes</em>. Forge produces production code and gates heavily; ProtoBot produces disposable demo prototypes and gates once.</p>
+  <p>DEX is doing something categorically different that is easy to miss: it has no approval gate after clarification, but the timeline gives <em>post-hoc</em> control — jump to any stage, fork a branch mid-run, delete a version, promote a different one to main. That is an undo tree, not a gate. For prototyping, where the answer to "is this right?" is usually "let me see the other version", an undo tree is worth more than an approval queue.</p>
+
+  <h3>Axis 3 — Trust model</h3>
+  <p>Fullsend is far ahead, and its reasoning is first-principles rather than checklist-driven: prompt injection cannot be reliably prevented, therefore any credential inside a sandbox must be assumed exfiltrable, therefore the default posture is <em>zero credentials in the sandbox</em>. ADR&nbsp;0016's unidirectional control flow — no layer may reconfigure any layer above it — is a genuine structural invariant that the other three lack entirely.</p>
+  <p>Forge is solid but simpler: no Jira/GitHub/Redis credentials in containers, rootless Podman, HMAC webhooks — but blanket network isolation with no L7 policy. ProtoBot has the right instincts and no design. DEX has no trust boundary at all, which is coherent for a desktop app and a hard wall if it ever needs to run unattended.</p>
+
+  <h3>Axis 4 — Where does the machinery live?</h3>
+  <p>Fullsend's decision to run as a CI job with no server is the biggest adoption advantage in the set. There is nothing to deploy, nothing to operate, nothing to get budget for. Forge needs FastAPI, Redis and a Podman host — real infrastructure with a documented single point of failure. DEX needs nothing but a laptop and can never be shared. ProtoBot wants both ends of this range at once.</p>
+
+  <h3>Axis 5 — Verification, and the oracle problem</h3>
+  <p>Forge, Fullsend and DEX all operate on <em>existing repositories with existing test suites</em>. That means they can outsource the hard question — "is this correct?" — to CI. ProtoBot builds from zero, where no oracle exists, so it cannot. This is why it is the only one of the four attacking verification head-on with dual-model isolation and mutation testing. The problem is real and correctly identified. Whether the answer works is §03.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="sechead"><span class="plate">03</span><h2>Project by project</h2></div>
+
+  <div class="project proto">
+    <h3>ProtoBot <span class="tag">design draft</span></h3>
+    <p class="summary">The most intellectually ambitious of the four and the only one with no code. Its related-work survey is better than anything in the other three repositories — it has clearly read the field. Its risk is that everything hard is still marked "needs design".</p>
+
+    <div class="subhead">Right calls</div>
+    <ul class="tight">
+      <li><span class="pill p-good">correct</span> <strong>A validated, queryable spec store.</strong> <code>ears-manager</code> as a static Go binary, deterministic, format-agnostic, callable by agents, CI and humans alike. This is the correct lesson from both IdeaBot's leakage problem and Yegge's 605-markdown-file collapse. It is the best single decision in the document.</li>
+      <li><span class="pill p-good">correct</span> <strong>EARS instead of Gherkin.</strong> Well argued. Gherkin's feature/rule scaffolding is largely non-executable and exists to group tests; dropping the intermediary and generating tests straight from requirements removes a whole layer of drift.</li>
+      <li><span class="pill p-good">correct</span> <strong>Separating spec content from lifecycle state.</strong> Content in git via <code>ears-manager</code>, lifecycle in the tracker via the WMS adapter, because atomic claim needs compare-and-swap and files in git cannot provide it. Subtle and right.</li>
+      <li><span class="pill p-good">correct</span> <strong>Evaluability as a day-one architectural constraint,</strong> with a per-component eval table and the observation that preserved git history is itself the eval dataset. No other project in the set treats this as structural.</li>
+      <li><span class="pill p-good">correct</span> <strong>Naming the oracle problem.</strong> The dual-model isolation idea is the right response to the evidence it cites — measurable cheating rates in reimplementation benchmarks, and Claude inserting comments purely to satisfy string-matching assertions.</li>
+    </ul>
+
+    <div class="subhead">Gaps</div>
+    <ul class="tight">
+      <li><span class="pill p-risk">critical</span> <strong>The triage step leaks the isolation it is supposed to protect.</strong> Triage must see both Workers' output to attribute a failure. The moment it tells Worker&nbsp;B "the test expects 401 and you return 200", it has transmitted the test. Isolation degrades into a slower information channel across iterations rather than a barrier. The document notices the tension (Q15) but treats it as a scheduling question; it is a soundness question. Four of the open questions — 8, 9, 10 and 15 — sit on this one critical path.</li>
+      <li><span class="pill p-risk">critical</span> <strong>The Building loop has no termination condition.</strong> "Repeat until all tests pass" — no retry cap, no budget ceiling, no blocked state, no escape hatch. Forge caps CI repair and has <code>forge:blocked</code> plus <code>forge:retry</code>. DEX has <code>maxLoopCycles</code>, <code>maxBudgetUsd</code> and an explicit cycle-failure policy. Fullsend names flapping convergence as a tracked problem. ProtoBot cites the benchmark result where a model burned ~900M tokens on the wrong architectural foundation, then designs no defence against it.</li>
+      <li><span class="pill p-risk">critical</span> <strong>No cost model anywhere.</strong> Two Workers, N Inspectors, mutation testing on generated code, and an uncapped iteration loop is the most expensive pipeline of the four by a wide margin. Forge tracks per-ticket cost in Grafana; DEX has a spend ceiling that stops the loop. ProtoBot never mentions budget.</li>
+      <li><span class="pill p-watch">check</span> <strong>"The difference is ceremony, not architecture" is probably false.</strong> Fullsend spent roughly thirty ADRs on exactly this boundary — per-repo versus per-org installation, dispatch routing, token minting, privilege levels, version skew — and deprecated several of its own answers along the way. The claim is an aspiration; the neighbouring project's evidence contradicts it.</li>
+      <li><span class="pill p-watch">check</span> <strong>Security is cited, not designed.</strong> OpenShell and the Bridge/Gate pattern are named as adopted, but there is no threat model, no per-component privilege table, no injection analysis. Worse, the document itself records that IdeaBot rejected OpenShell in May 2026 over OpenShift SCC issues — flagged, unresolved, and on the critical path.</li>
+      <li><span class="pill p-watch">check</span> <strong>The gate is in the wrong place for the stated product.</strong> A disposable demo prototype gets one early gate and full autonomy through merge; the document then concedes in Q13 that its own risk rating will likely force another checkpoint anyway. Your margin note about the prototype/bootstrap contradiction is the same tension surfacing twice.</li>
+      <li><span class="pill p-watch">check</span> <strong>Ongoing obligations will not scale as specified.</strong> Q19 is a genuinely good catch that nobody else has named — but the proposed mechanism, filtering ubiquitous and state-driven requirements by interface and letting the Worker judge applicability, is per-work-item LLM judgement over a growing requirement set. It gets more expensive exactly as the project gets more valuable.</li>
+    </ul>
+  </div>
+
+  <div class="project dex">
+    <h3>DEX <span class="tag">working app</span></h3>
+    <p class="summary">You know why it looks the way it looks, so this is the outside view: what it solves better than the other three, and where the single-player choice has a real cost.</p>
+
+    <div class="subhead">Right calls</div>
+    <ul class="tight">
+      <li><span class="pill p-good">correct</span> <strong>The timeline is the best human-control surface in the set.</strong> Forge and Fullsend give you approval gates — binary and forward-only. DEX gives you a branching DAG where one click jumps, forks or promotes. For prototyping, being able to fork at a stage and try the other direction beats approving each step. ProtoBot has nothing equivalent, and your own margin note asking for git branches per spec is exactly this feature — already built and proven.</li>
+      <li><span class="pill p-good">correct</span> <strong>Deterministic feature selection.</strong> The manifest is extracted once and read mechanically; the LLM is confined to a five-value decision. That is Fullsend ADR&nbsp;0018's conclusion, implemented independently, without needing the failed experiment first.</li>
+      <li><span class="pill p-good">correct</span> <strong>Mock backend plus checkpoint replay.</strong> This is the most practical answer in the set to "how do you affordably test a non-deterministic, LLM-billed system". Fullsend needed several ADRs and a dedicated eval harness to get here. Forge's local testing requires Redis, Podman and Jira access. ProtoBot's documents never address how the Job Site gets tested at all.</li>
+      <li><span class="pill p-good">correct</span> <strong>No database.</strong> Git refs authoritative, JSON as cache. This is Beads' lesson without importing Beads' complexity.</li>
+      <li><span class="pill p-good">correct</span> <strong>The 600-LOC ceiling enforced in CI.</strong> Crude, but it is a working answer to a problem Fullsend has open as <code>agent-compatible-code.md</code> and nobody else has addressed at all.</li>
+    </ul>
+
+    <div class="subhead">Gaps</div>
+    <ul class="tight">
+      <li><span class="pill p-risk">notable</span> <strong>Verification is the weakest of the four.</strong> One verify stage, same trust lineage as the implementer, no independent reviewer, no dimensional fan-out. Forge and Fullsend both run adversarial review as a <em>separate role with separate context</em>; ProtoBot goes further still. Self-review is the weakest form, and it is the form DEX uses. This is the clearest single upgrade available.</li>
+      <li><span class="pill p-watch">check</span> <strong><code>learnings.md</code> is the pattern Beads exists to replace.</strong> An append-only markdown file that accumulates across cycles will grow past useful and degrade quietly. Fullsend tracks this as <code>cross-run-memory.md</code>; it is a known trap.</li>
+      <li><span class="pill p-watch">check</span> <strong>No well-formedness gate on intent.</strong> Spec-kit gives structure but nothing equivalent to <code>ears-manager check</code> — no CI gate that fails when a spec is malformed or references something that does not exist. ProtoBot is right that this matters.</li>
+      <li><span class="pill p-watch">scope</span> <strong>Single-player by construction.</strong> No sandbox, no credential isolation, no multi-tenancy — entirely coherent for a desktop app, but it means there is no layer to extend if DEX ever needs to run unattended or against someone else's repository. That would be an addition, not a configuration.</li>
+    </ul>
+  </div>
+
+  <div class="project forge">
+    <h3>Forge <span class="tag">production service</span></h3>
+    <p class="summary">The most mature <em>workflow</em> engineering of the four — it reads like it was built by people who have operated distributed systems and been paged by them. Its own documentation is unusually honest about where it is unsound.</p>
+
+    <div class="subhead">Right calls</div>
+    <ul class="tight">
+      <li><span class="pill p-good">correct</span> <strong>Failure handling as a first-class concern.</strong> Checkpoints per ticket, resume from the failed node, dead-letter queue, exponential backoff, an explicit blocked state with a retry label. Nobody else in the set has this depth, and ProtoBot has none of it.</li>
+      <li><span class="pill p-good">correct</span> <strong>Cross-repo decomposition.</strong> Forge natively plans a feature across services, clients, infrastructure and docs repos, then splits it into independently reviewable repo-scoped units. DEX, Fullsend and ProtoBot all assume one repository. ProtoBot will hit this the first time it builds anything real.</li>
+      <li><span class="pill p-good">correct</span> <strong>Observability that answers business questions.</strong> Prometheus, Langfuse and Grafana giving cost per ticket and latency per workflow step. ProtoBot's evaluability section describes wanting roughly this; Forge already runs it.</li>
+      <li><span class="pill p-good">correct</span> <strong>Layered skill overrides</strong> — team defaults with project, repo and stack overrides — so teams adapt behaviour without forking the orchestrator. ProtoBot correctly identified this as the model for its Specification Toolkit.</li>
+    </ul>
+
+    <div class="subhead">Gaps</div>
+    <ul class="tight">
+      <li><span class="pill p-risk">notable</span> <strong>Documented and unfixed correctness holes.</strong> The internals doc states plainly that the deduplication service exists but is not wired into the webhook routes; that checkpoint writes and external side effects are not transactional, so a crash between them duplicates Jira comments on retry; and that per-ticket serialisation uses an in-process lock rather than a distributed one, which makes horizontal worker scaling unsound. Honest documentation, real bugs waiting.</li>
+      <li><span class="pill p-risk">notable</span> <strong>Redis is a total single point of failure</strong> — "complete system outage; all state at risk" — with no built-in HA.</li>
+      <li><span class="pill p-watch">check</span> <strong>Blanket network isolation.</strong> No L7 policy, so there is no way to permit package registries and documentation while blocking exfiltration. ProtoBot correctly identifies this as disqualifying for its own use case, where scaffolding from zero requires registry access.</li>
+      <li><span class="pill p-watch">check</span> <strong>Gates pause indefinitely.</strong> No timeout, no escalation. In practice that means tickets rot silently in the approval queue.</li>
+      <li><span class="pill p-watch">scope</span> <strong>Jira-only intake</strong> and the heaviest operational burden of the four.</li>
+    </ul>
+  </div>
+
+  <div class="project full">
+    <h3>Fullsend <span class="tag">production platform</span></h3>
+    <p class="summary">The strongest security architecture and the strongest design process in the set. Also the one whose complexity is visibly running ahead of it in one specific layer.</p>
+
+    <div class="subhead">Right calls</div>
+    <ul class="tight">
+      <li><span class="pill p-good">correct</span> <strong>Credential isolation reasoned from first principles.</strong> ADR&nbsp;0017 does not argue from a detection rate; it argues that the attack is fundamentally asymmetric, so no detection rate would be sufficient, so credentials must simply not exist in the sandbox. Default is prefetch-in / post-script-out; the REST proxy with L7 policy is the documented fallback with its maintenance cost stated honestly. This is the best piece of security reasoning across all four repositories.</li>
+      <li><span class="pill p-good">correct</span> <strong>Unidirectional control flow.</strong> No layer may reconfigure any layer above it — with the distinction between prohibited upward <em>control</em> and permitted upward <em>data</em> drawn precisely. It buys security, portability and testability from one invariant.</li>
+      <li><span class="pill p-good">correct</span> <strong>Zero infrastructure.</strong> Running as a CI job removes the deployment conversation entirely. ProtoBot's stated requirement to work without a Kubernetes cluster is exactly what this already solves.</li>
+      <li><span class="pill p-good">correct</span> <strong>Deliberately bounded intake.</strong> Triage reads title, body and attachments — never the comment thread. Cheaper, more predictable, and it removes a large prompt-injection surface. A real insight, and cheap to copy.</li>
+      <li><span class="pill p-good">correct</span> <strong>ADR discipline.</strong> Frozen on acceptance, superseded rather than edited. It is why the reasoning is still legible at 80+ decisions, and it is why this repository is the most useful one to learn from.</li>
+    </ul>
+
+    <div class="subhead">Gaps</div>
+    <ul class="tight">
+      <li><span class="pill p-risk">notable</span> <strong>Intent representation is the weak flank, and they know it.</strong> Work starts from an issue body; nothing durable defines what the system is supposed to be. Fine for "fix this bug", insufficient for "build this product". It is the exact mirror of ProtoBot's strength.</li>
+      <li><span class="pill p-watch">check</span> <strong>The distribution layer has outgrown the agent layer.</strong> Token minting, per-repo versus per-org modes, dispatch version skew, CEL triggers, layered content resolution — with several ADRs deprecating earlier ADRs in the same area. That churn is the honest signal: this boundary is much harder than it looks, and it is the same boundary ProtoBot calls "ceremony, not architecture".</li>
+      <li><span class="pill p-watch">check</span> <strong>Per-agent sandboxes are expensive by design.</strong> ADR&nbsp;0020 states the arithmetic — N agents × M concurrent tasks × a cold start each — and accepts it. Security was chosen over cost, deliberately, but the cost is real and there is no cost model published the way Forge has one.</li>
+    </ul>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="sechead"><span class="plate">04</span><h2>ProtoBot's open questions that are already answered next door</h2></div>
+
+  <p>Several items on ProtoBot's open-questions list are running in production in a sibling project. These are not research problems for ProtoBot; they are integration decisions.</p>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Open question</th>
+          <th scope="col">Already solved by</th>
+          <th scope="col">The answer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Q12 — Inspector roster</th>
+          <td><span class="swatch s-full"></span>Fullsend</td>
+          <td>Config-driven agent registration. Org or per-repo config lists the agents; the pipeline provisions them. Adding a review dimension is a config change, not a code change.</td>
+        </tr>
+        <tr>
+          <th scope="row">Q14 — Inspection report format</th>
+          <td><span class="swatch s-full"></span>Fullsend</td>
+          <td>Structured, not free-form. Schema-locked JSON findings with a severity threshold, harness-level enforcement and a two-retry validation loop. Free-form would forfeit the ability to filter, deduplicate and route mechanically.</td>
+        </tr>
+        <tr>
+          <th scope="row">Q15 — Triage mechanism</th>
+          <td><span class="swatch s-forge"></span>Forge</td>
+          <td>A bounded loop with explicit caps, a blocked state and an operator-visible retry trigger. The shape is proven; what ProtoBot still owes is how it survives contact with dual-model isolation.</td>
+        </tr>
+        <tr>
+          <th scope="row">Q2 — Escalation channel</th>
+          <td><span class="swatch s-forge"></span>Forge · <span class="swatch s-full"></span>Fullsend</td>
+          <td>The tracker <em>is</em> the channel. Labels and comments carry the escalation; humans already watch that surface. No separate notification system is needed.</td>
+        </tr>
+        <tr>
+          <th scope="row">Q7 — Requirements storage format</th>
+          <td><span class="swatch s-dex"></span>DEX</td>
+          <td>Make git refs authoritative and treat the structured file as a rebuildable cache. Removes most of the merge-conflict pressure that makes the JSONL question feel load-bearing.</td>
+        </tr>
+        <tr>
+          <th scope="row">Single-player deployment</th>
+          <td><span class="swatch s-full"></span>Fullsend</td>
+          <td>Run the pipeline as a CI job. No server, no cluster, and the same artifact works for one developer or a whole org.</td>
+        </tr>
+        <tr>
+          <th scope="row">Credential isolation</th>
+          <td><span class="swatch s-full"></span>Fullsend</td>
+          <td>Adopt ADR&nbsp;0017 wholesale rather than re-deriving it. The reasoning, the fallback tier and the honest cost accounting are all already written.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="sechead"><span class="plate">05</span><h2>What none of them has solved</h2></div>
+
+  <ol class="findings">
+    <li>
+      <div class="lead"><b>Generating from zero with no oracle.</b></div>
+      <p>Forge, Fullsend and DEX all work inside repositories that already have tests, so CI answers "is this correct?" for them. ProtoBot scaffolds from nothing, which is precisely why it needs dual-model isolation — and why it cannot borrow anyone's answer. This is genuinely open, and ProtoBot is the only one working on it.</p>
+    </li>
+    <li>
+      <div class="lead"><b>Triaging a surviving mutant.</b></div>
+      <p>ProtoBot's own analysis is correct and uncomfortable: distinguishing an equivalent mutant from a weak test from unspecified behaviour requires knowing whether the mutated program still conforms to the spec — which is the oracle you were trying to build. Mutation testing stays useful in aggregate as a coverage signal; per-mutant routing has no mechanical answer.</p>
+    </li>
+    <li>
+      <div class="lead"><b>Knowing when to stop.</b></div>
+      <p>Forge caps retries, DEX caps cycles and spend, Fullsend names flapping convergence as an open problem. All three <em>bound</em> the loop; none can tell you whether the loop is converging or thrashing. Bounding is not the same as knowing.</p>
+    </li>
+    <li>
+      <div class="lead"><b>Durable intent that survives the system.</b></div>
+      <p>Fullsend has minimal intent and knows it. Forge's artifact chain is generated per ticket and does not accumulate into a definition of the product. DEX's specs are prose. ProtoBot's answer — a validated requirement store — is the most promising, and it is untested at any scale.</p>
+    </li>
+  </ol>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="sechead"><span class="plate">06</span><h2>The short version</h2></div>
+
+  <div class="callout" style="--accent: var(--p-proto);">
+    <div class="subhead">If ProtoBot changes three things</div>
+    <p><strong>Bound the Building loop.</strong> Retry cap, budget ceiling, blocked state, escalation path. This is the highest-value change and the cheapest — Forge's shape can be copied directly.</p>
+    <p><strong>Decide what triage is allowed to say.</strong> Dual-model isolation is the document's best idea and its most fragile one. Until the triage message format is specified — and specified as something that cannot carry the test's content — isolation is an intention rather than a property.</p>
+    <p><strong>Stop re-deriving Fullsend.</strong> Credential isolation, structured findings, config-driven reviewer rosters, escalation through the tracker, and CI-as-infrastructure are all already reasoned out one directory over. Adopting them frees the design budget for the oracle problem, which is the part only ProtoBot is working on.</p>
+  </div>
+
+  <div class="callout" style="--accent: var(--p-dex);">
+    <div class="subhead">If DEX changes one thing</div>
+    <p>Add an independent reviewer with its own context — not a second pass by the same lineage. A read-only agent fanning out across two or three dimensions, returning structured findings, gating the stage commit. Both production systems in this set converged on that shape, and it is the one structural idea DEX is missing. Everything else it does differently, it does defensibly.</p>
+  </div>
+
+  <p style="margin-top: 2rem;">The uncomfortable summary is that ProtoBot has the best ideas and no evidence, Fullsend has the best engineering discipline and the thinnest notion of intent, Forge has the most operational maturity and the narrowest intake, and DEX has the best human-control surface and the weakest verification. None of them is wrong about the thing it chose to be good at.</p>
+
+  <p class="footnote">Findings about ProtoBot, DEX, Forge and Fullsend are drawn from repository source and in-repo documentation read directly. Where a claim originates in ProtoBot's own related-work survey rather than the sibling repository — release counts, benchmark scores, and specific retry constants for Forge — it is attributed as ProtoBot's claim and was not independently verified. Forge's node and gate counts here are from its current source tree and differ slightly from the figures in ProtoBot's survey.</p>
+</section>
+
+</div>
+</body>
+</html>
