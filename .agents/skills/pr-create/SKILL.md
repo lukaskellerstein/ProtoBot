@@ -23,13 +23,28 @@ Stop on the first failure and show the fix.
 |-------|-----|-----|
 | Branch is `lukas/<slug>`, not `main` | `git branch --show-current` | start `claude -w lukas/<slug>` |
 | Tree is clean | `git status --short` prints nothing | the user commits or stashes. Do not commit for them |
-| No private files in the diff | the command below prints nothing | the branch was cut from `origin/main`. Run `git rebase --onto upstream/main origin/main` |
+| No private files in the diff | the command below prints nothing | the branch was cut from fork `main`. See below |
 
 ```bash
 git fetch upstream --prune
-git diff --name-only upstream/main...HEAD \
-  | grep -E '^(lukas/|\.claude/|\.reviews/|\.worktreeinclude|\.agents/skills/(fullsend|pr-review|pr-create|pr-update)/)'
+git ls-files -i -c --exclude-from="$(git rev-parse --path-format=absolute --git-common-dir)/info/exclude"
 ```
+
+The private paths are the rules in `.git/info/exclude`, and the command lists
+every tracked file on this branch that matches one. Upstream has none of these
+paths, so a printed path means the branch carries the private layer in its
+history. That file is the one list, and `/sync-fork` keeps it complete. Do not
+pipe the diff into `git check-ignore` here: it aborts on a path behind one of
+the skill symlinks. Find where the feature commits start and move only those:
+
+```bash
+git log --oneline upstream/main..HEAD   # the private commits come first, then yours
+git rebase --onto upstream/main <sha of the last private commit>
+```
+
+Do not use `git rebase --onto upstream/main origin/main`. `origin/main` moves
+with every `/sync-fork`, and after one the merge base falls back to an old
+upstream commit, so the private commits ride along.
 
 ## 2. Rebase and test
 
@@ -65,16 +80,18 @@ gh pr create --repo redhat-et/protobot --base main \
   `docs(#46): define logical schema for EARS specification records`.
 - Body: what changed, why, how it was tested, then `Closes #<issue>` when
   there is one.
-- If the diff touches a path the review bot protects (`.github/`,
-  `.claude/`, `AGENTS.md`, `agents/`, `skills/`, `scripts/`, and the others
-  listed in the Fullsend reference), name the issue that authorizes it in
-  the body. The bot never approves such a PR on its own, and the note tells
-  the human why.
+- If the diff touches a protected path, name the issue that authorizes it in
+  the body. The list is in the Fullsend reference, section "Protected
+  paths". `.github/`, `.pre-commit-config.yaml` and `AGENTS.md` are the ones
+  this repository hits. The bot never approves such a PR on its own, and the
+  note tells the human why.
 - Labels: none. `ready-for-review` starts a second review run.
   `fullsend-fix` lets the bot push to your branch, and on a fork PR it is
   refused anyway.
 
 ## 5. Wait for CI, then stop
+
+`$PR` is the number at the end of the URL that `gh pr create` printed.
 
 ```bash
 gh pr checks "$PR" --repo redhat-et/protobot --watch
