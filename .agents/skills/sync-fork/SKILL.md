@@ -48,7 +48,6 @@ already there.
 
 ```text
 # --- private layer, kept complete by /sync-fork ---
-/lukas/
 /.reviews/
 /.worktreeinclude
 /.claude/settings.json
@@ -94,6 +93,12 @@ Create the file if it is missing.
 A new private skill means one line in the first block, and one in the
 second if it runs inside a worktree. Both blocks are in this file, so
 edit this file first, then run the skill.
+
+The first `git add` of a new file under a private path needs `-f`,
+because the exclude rule blocks a plain add. After that one add the
+file is tracked, and the rule never touches it again. `lukas/` is not
+listed for that reason: notes are added often, and they never reach a
+worktree.
 
 Then check that the create hook has a base to cut from. The hook cuts a
 new worktree from `upstream/HEAD`:
