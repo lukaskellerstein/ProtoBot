@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProtoBot Agent Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Libre+Franklin:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+:root {
+  color-scheme: light;
+  --ground:      #eef1f5;
+  --surface:     #ffffff;
+  --surface-2:   #f6f8fa;
+  --ink:         #12161b;
+  --ink-2:       #4c545f;
+  --ink-3:       #78818e;
+  --rule:        #d7dce4;
+  --rule-soft:   #e6eaf0;
+
+  --signal:      #a75c00;
+  --signal-bg:   #fdf3e2;
+  --agent:       #2a78d6;
+  --agent-bg:    #e8f1fc;
+  --human:       #4a3aa7;
+  --human-bg:    #ecebf9;
+  --stop:        #b8362b;
+  --stop-bg:     #fdeceb;
+
+  --shadow: 0 1px 2px rgba(18,22,27,.06), 0 8px 24px -16px rgba(18,22,27,.28);
+  --maxw: 1180px;
+  --readw: 72ch;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground:    #0f1216;
+    --surface:   #171b21;
+    --surface-2: #1d222a;
+    --ink:       #eef1f5;
+    --ink-2:     #a9b2be;
+    --ink-3:     #7c8592;
+    --rule:      #2b323c;
+    --rule-soft: #232932;
+    --signal:    #e0a340;
+    --signal-bg: #2c2314;
+    --agent:     #5c9def;
+    --agent-bg:  #15243a;
+    --human:     #9085e9;
+    --human-bg:  #1f1d38;
+    --stop:      #ef7a72;
+    --stop-bg:   #331a19;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground:    #0f1216;
+  --surface:   #171b21;
+  --surface-2: #1d222a;
+  --ink:       #eef1f5;
+  --ink-2:     #a9b2be;
+  --ink-3:     #7c8592;
+  --rule:      #2b323c;
+  --rule-soft: #232932;
+  --signal:    #e0a340;
+  --signal-bg: #2c2314;
+  --agent:     #5c9def;
+  --agent-bg:  #15243a;
+  --human:     #9085e9;
+  --human-bg:  #1f1d38;
+  --stop:      #ef7a72;
+  --stop-bg:   #331a19;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.9);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: "Libre Franklin", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16.5px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: "Archivo", ui-sans-serif, system-ui, sans-serif; text-wrap: balance; margin: 0; }
+code, kbd, .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px 96px; }
+.masthead { border-bottom: 1px solid var(--rule); background: var(--surface); }
+.masthead-in { max-width: var(--maxw); margin: 0 auto; padding: 44px 24px 40px; }
+.eyebrow { font-family: "JetBrains Mono", monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--signal); font-weight: 700; margin: 0 0 14px; }
+h1 { font-size: clamp(34px, 5.4vw, 56px); font-weight: 800; letter-spacing: -.022em; line-height: 1.02; }
+.dek { max-width: 62ch; color: var(--ink-2); font-size: 18px; margin: 16px 0 0; }
+.masthead-meta { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 24px; font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-3); }
+.masthead-meta b { color: var(--ink-2); font-weight: 500; }
+.switcher { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; padding: 10px 16px; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface-2); font-size: 14px; color: var(--ink-2); }
+.switcher a { color: var(--agent); font-weight: 600; text-decoration: none; border-bottom: 1px solid transparent; }
+.switcher a:hover, .switcher a:focus-visible { border-bottom-color: currentColor; }
+
+.cols { display: grid; grid-template-columns: 230px minmax(0,1fr); gap: 48px; align-items: start; padding-top: 44px; }
+@media (max-width: 940px) { .cols { grid-template-columns: 1fr; gap: 0; } .rail { display: none; } }
+.rail { position: sticky; top: 24px; }
+.rail-title { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 12px; padding-left: 14px; }
+.rail ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--rule); }
+.rail li a { display: block; padding: 6px 0 6px 14px; margin-left: -1px; border-left: 2px solid transparent; color: var(--ink-2); text-decoration: none; font-size: 13.5px; line-height: 1.35; }
+.rail li a:hover, .rail li a:focus-visible { color: var(--ink); border-left-color: var(--signal); }
+
+section { scroll-margin-top: 20px; padding-bottom: 8px; }
+section + section { margin-top: 60px; }
+.sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+.sec-num { font-family: "JetBrains Mono", monospace; font-size: 12px; font-weight: 700; color: var(--signal); letter-spacing: .06em; }
+h2 { font-size: clamp(23px, 2.7vw, 30px); font-weight: 700; letter-spacing: -.014em; }
+h3 { font-size: 18px; font-weight: 700; margin: 34px 0 10px; letter-spacing: -.008em; }
+h4 { font-size: 15px; font-weight: 700; margin: 24px 0 8px; }
+p { max-width: var(--readw); margin: 14px 0; }
+.lead { font-size: 17.5px; color: var(--ink-2); }
+ul, ol.body { max-width: var(--readw); padding-left: 22px; }
+li { margin: 7px 0; }
+a { color: var(--agent); }
+.rule { height: 1px; background: var(--rule); border: 0; margin: 0; }
+
+.callout { border-left: 3px solid var(--signal); background: var(--signal-bg); padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 22px 0; max-width: var(--readw); }
+.callout p { margin: 6px 0; max-width: none; }
+.callout .panel-label { color: var(--signal); }
+.callout.warn { border-left-color: var(--stop); background: var(--stop-bg); }
+.callout.warn .panel-label { color: var(--stop); }
+.panel-label { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 12px; font-weight: 500; }
+
+.crew { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: 14px; margin: 26px 0; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 8px; }
+.card h4 { font-size: 16.5px; font-weight: 700; display: flex; align-items: center; gap: 9px; margin: 0; }
+.dot { width: 9px; height: 9px; border-radius: 2px; background: var(--agent); flex: none; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-2); max-width: none; }
+.card .who { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--ink-3); margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--rule); overflow-wrap: anywhere; }
+
+.tablewrap { overflow-x: auto; margin: 22px 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+thead th { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; background: var(--surface-2); border-bottom: 1px solid var(--rule); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; }
+td.num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
+tfoot td { border-top: 1px solid var(--rule); font-weight: 600; background: var(--surface-2); }
+
+.tag { display: inline-block; font-family: "JetBrains Mono", monospace; font-size: 12px; padding: 1px 7px; border-radius: 4px; white-space: nowrap; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule); }
+.tag.go   { background: var(--signal-bg); color: var(--signal); border-color: transparent; font-weight: 500; }
+.tag.bot  { background: var(--agent-bg);  color: var(--agent);  border-color: transparent; font-weight: 500; }
+.tag.stop { background: var(--stop-bg);   color: var(--stop);   border-color: transparent; font-weight: 500; }
+.tag.you  { background: var(--human-bg);  color: var(--human);  border-color: transparent; font-weight: 500; }
+code { font-size: .88em; background: var(--surface-2); border: 1px solid var(--rule-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; overflow-x: auto; font-family: "JetBrains Mono", monospace; font-size: 13px; line-height: 1.65; margin: 20px 0; }
+pre .c { color: var(--ink-3); }
+pre .k { color: var(--signal); }
+pre b { color: var(--ink); font-weight: 700; }
+
+figure { margin: 28px 0; }
+figure svg { display: block; width: 100%; height: auto; max-width: 100%; color: var(--ink); }
+figcaption { font-size: 13.5px; color: var(--ink-3); margin-top: 12px; max-width: 64ch; }
+.figbox { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; overflow-x: auto; }
+
+.tl { margin: 26px 0; border-left: 2px solid var(--rule); padding-left: 0; list-style: none; }
+.tl li { display: grid; grid-template-columns: 82px 1fr; gap: 14px; margin: 0; padding: 9px 0 9px 18px; position: relative; }
+.tl li::before { content: ""; position: absolute; left: -6px; top: 19px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ink-3); }
+.tl li.a-bot::before   { border-color: var(--agent); background: var(--agent); }
+.tl li.a-human::before { border-color: var(--human); background: var(--human); }
+.tl-t { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-3); padding-top: 3px; white-space: nowrap; }
+.tl-b { font-size: 15px; }
+.tl-b .sub { display: block; color: var(--ink-3); font-size: 13.5px; }
+
+.chartgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 20px; margin: 24px 0; }
+.chart { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; }
+.chart h4 { font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+.chart .sub { font-size: 12.5px; color: var(--ink-3); margin: 0 0 16px; font-family: "JetBrains Mono", monospace; }
+.bars { display: flex; flex-direction: column; gap: 11px; }
+.barrow, .grouprow { display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: center; }
+.barlabel { font-size: 13.5px; color: var(--ink-2); text-align: right; }
+.bartrack { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.bar { height: 14px; border-radius: 0 4px 4px 0; background: var(--agent); flex: none; }
+.bar.s2 { background: var(--signal); }
+.barval { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.grouprow .pair { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.legend { display: flex; gap: 18px; margin: 0 0 16px; font-size: 13px; color: var(--ink-2); align-items: center; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+.cheat { display: grid; gap: 0; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--surface); margin: 24px 0; }
+.cheat > div { display: grid; grid-template-columns: minmax(210px, 1fr) minmax(0, 1.7fr); gap: 18px; padding: 14px 18px; border-bottom: 1px solid var(--rule-soft); align-items: baseline; }
+.cheat > div:last-child { border-bottom: 0; }
+.cheat .want { font-weight: 600; font-size: 15px; }
+.cheat .do { color: var(--ink-2); font-size: 14.5px; }
+@media (max-width: 620px) { .cheat > div { grid-template-columns: 1fr; gap: 4px; } }
+
+footer { border-top: 1px solid var(--rule); margin-top: 72px; padding-top: 26px; color: var(--ink-3); font-size: 13.5px; }
+footer p { max-width: 70ch; }
+a:focus-visible, .rail a:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-in">
+    <p class="eyebrow">Fullsend on redhat-et/ProtoBot &middot; the detailed version</p>
+    <h1>ProtoBot Agent Pipeline</h1>
+    <p class="dek">The exact mechanics: what routes an event to which agent, which condition each rule tests, what runs inside the sandbox, and what ProtoBot has configured differently from the shipped defaults.</p>
+    <div class="masthead-meta">
+      <span><b>Repo</b> redhat-et/ProtoBot</span>
+      <span><b>Fullsend</b> v0.40.0 (2a10349)</span>
+      <span><b>Install mode</b> per-repo</span>
+      <span><b>Runtime</b> claude &middot; opus &rarr; claude-opus-4-6 &middot; effort high</span>
+      <span><b>Data</b> 2&ndash;9 Sep 2026</span>
+    </div>
+    <p class="switcher">New to this? <a href="01-plain-protobot-robot-crew.html">Start with the plain version.</a></p>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="cols">
+
+  <nav class="rail" aria-label="Sections">
+    <p class="rail-title">On this page</p>
+    <ol>
+      <li><a href="#s1">What Fullsend is</a></li>
+      <li><a href="#s2">The six agents</a></li>
+      <li><a href="#s3">The dispatch chain</a></li>
+      <li><a href="#s4">The routing rules</a></li>
+      <li><a href="#s5">Labels as the state machine</a></li>
+      <li><a href="#s6">Slash commands</a></li>
+      <li><a href="#s7">The review and fix loop</a></li>
+      <li><a href="#s8">Pull request 61, step by step</a></li>
+      <li><a href="#s9">The guard rails</a></li>
+      <li><a href="#s10">ProtoBot's configuration</a></li>
+      <li><a href="#s11">By the numbers</a></li>
+      <li><a href="#s12">Where to look when it goes wrong</a></li>
+    </ol>
+  </nav>
+
+  <main id="top">
+
+  <!-- 1 -->
+  <section id="s1">
+    <div class="sec-head"><span class="sec-num">01</span><h2>What Fullsend is</h2></div>
+    <p class="lead">Fullsend turns GitHub events into single, sandboxed agent runs. It has no server, no queue and no memory. GitHub itself is the coordinator, and the labels on issues and pull requests are the state.</p>
+
+    <p>Fullsend defines a five-layer execution stack. Control flows strictly downward. No layer can configure or influence a layer above it, which is the structural rule the whole security story rests on.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Job</th><th>What it is on ProtoBot</th></tr></thead>
+        <tbody>
+          <tr><td><b>Dispatch and coordination</b></td><td>Turn an event into one agent task</td><td><code>.github/workflows/fullsend.yaml</code> calling the upstream <code>reusable-dispatch.yml</code></td></tr>
+          <tr><td><b>Infrastructure</b></td><td>Provide the compute</td><td>GitHub Actions, runner image <code>ubuntu-24.04</code></td></tr>
+          <tr><td><b>Sandbox</b></td><td>Contain the agent</td><td>OpenShell container, network allowed per binary and per endpoint</td></tr>
+          <tr><td><b>Harness</b></td><td>Assemble prompt, skills, tools, scripts</td><td>YAML in <code>fullsend-ai/agents</code>, layered with <code>.fullsend/harness/*.yaml</code></td></tr>
+          <tr><td><b>Runtime</b></td><td>Run the model</td><td>Claude Code, Opus through Vertex AI in GCP project <code>it-gcp-octo-fullsend</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Three things sit beside the stack rather than in it: the policy store (what agents may do), the identity provider (the token mint that issues per-role GitHub App tokens), and observability (OpenTelemetry traces plus the status comments you see on each issue).</p>
+
+    <div class="callout">
+      <p class="panel-label">Per-repo installation</p>
+      <p>ProtoBot uses per-repo installation mode. Everything lives in this repository: <code>.fullsend/config.yaml</code>, <code>.fullsend/harness/</code>, and the shim workflow. There is no separate <code>redhat-et/.fullsend</code> config repository. Org-level installation is deprecated upstream, so ignore any documentation that describes it.</p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 2 -->
+  <section id="s2">
+    <div class="sec-head"><span class="sec-num">02</span><h2>The six agents</h2></div>
+    <p>Each agent is a harness file plus a GitHub App identity plus a JSON output schema. All six roles are enabled on ProtoBot.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Agent</th><th>Role key</th><th>App identity</th><th>Writes?</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td><b>Triage</b></td><td><code>triage</code></td><td><code>fullsend-ai-triage[bot]</code></td><td>No</td><td>Structured triage decision. The post-script applies labels and posts the summary.</td></tr>
+          <tr><td><b>Code</b></td><td><code>coder</code></td><td><code>fullsend-ai-coder[bot]</code></td><td>Yes</td><td>Local commits. The post-script pushes the branch and opens the pull request.</td></tr>
+          <tr><td><b>Review</b></td><td><code>review</code></td><td><code>fullsend-ai-review[bot]</code></td><td>No</td><td>Structured review result. The post-script posts the review and applies outcome labels.</td></tr>
+          <tr><td><b>Fix</b></td><td><code>coder</code></td><td><code>fullsend-ai-coder[bot]</code></td><td>Yes</td><td>One commit. The post-script pushes it and posts a summary comment.</td></tr>
+          <tr><td><b>Retro</b></td><td><code>retro</code></td><td><code>fullsend-ai-retro[bot]</code></td><td>No</td><td>Improvement proposals. The post-script files them as issues labelled <span class="tag go">ready-for-triage</span>.</td></tr>
+          <tr><td><b>Prioritize</b></td><td><code>prioritize</code></td><td><code>fullsend-ai-prioritize[bot]</code></td><td>No</td><td>RICE scores. The post-script writes them to the project board.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <p class="panel-label">Identity trap</p>
+      <p>Fix and Code share one identity. A commit or comment from <code>fullsend-ai-coder[bot]</code> can be either agent. Read the comment body: the fix agent labels its summaries "Fix agent &mdash; iteration N".</p>
+    </div>
+
+    <h3>Harness shape</h3>
+    <p>Every agent harness declares the same fields. The triage harness at v0.40.0, for example, sets <code>model: opus</code>, <code>effort: high</code>, a pinned sandbox image digest, <code>policy: policies/base.yaml</code>, a Vertex AI provider, <code>pre_script</code> and <code>post_script</code>, a validation loop with <code>max_iterations: 2</code>, and <code>timeout_minutes: 10</code>.</p>
+    <p>A repository overrides a harness by composition, not by copying. ProtoBot's <code>.fullsend/harness/triage.yaml</code> is five lines: a <code>base:</code> URL pinned to <code>v0.40.0</code> with a SHA-256 integrity hash, plus the one environment variable it wants to change.</p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 3 -->
+  <section id="s3">
+    <div class="sec-head"><span class="sec-num">03</span><h2>The dispatch chain</h2></div>
+
+    <h3>From event to job</h3>
+    <p>The shim workflow in ProtoBot subscribes to four event types and forwards them all to one upstream reusable workflow, which does the routing and then runs the stage job inline.</p>
+
+<pre><span class="c"># .github/workflows/fullsend.yaml  (managed by fullsend, do not edit)</span>
+on:
+  issues:              types: [opened, edited, labeled]
+  issue_comment:       types: [created]
+  pull_request_target: types: [opened, synchronize, ready_for_review, closed, labeled, unlabeled]
+  pull_request_review: types: [submitted]
+
+jobs:
+  dispatch:
+    uses: fullsend-ai/fullsend/.github/workflows/<b>reusable-dispatch.yml</b>@2a10349  <span class="c"># v0.40.0</span>
+  stop-fix:            <span class="c"># separate job, handles /fs-fix-stop only</span>
+</pre>
+
+    <p>The job-level condition drops three classes of event before any compute is spent: anything on the <code>fullsend/scaffold-install</code> branch, any comment from a bot, and Renovate pull requests on the actions that would otherwise start a review.</p>
+
+    <p>Inside <code>reusable-dispatch.yml</code> there is one <code>route</code> job and one job per stage. Only the job whose name matches the routed stage runs. Adding a stage upstream needs no change in ProtoBot.</p>
+
+    <h3>What the route job does, in order</h3>
+    <ol class="body">
+      <li>Sparse-checkout of <code>.fullsend/config.yaml</code> only, pinned to the base branch SHA on pull request events. No pull request code is fetched.</li>
+      <li>Run the routing script. It reads the event, the added label, the comment body and the actor, calls the collaborator permission API where needed, and sets exactly one stage or an empty string.</li>
+      <li>Validate the stage name and the trigger source string against a strict pattern.</li>
+      <li>Check the kill switch: <code>kill_switch: true</code> in config fails the run immediately.</li>
+      <li>Validate the shape of the <code>agents:</code> block: it must be a list, disabled entries need a name, enabled entries need a source or a tuning field, and names must be unique.</li>
+      <li>Check the role is listed in <code>roles:</code>. Stages <code>code</code> and <code>fix</code> both map to the role <code>coder</code>.</li>
+      <li>Check the agent is not disabled by <code>agents[].enabled: false</code>.</li>
+      <li>For stage <code>code</code> only: query GitHub GraphQL for pull requests that actually close the issue through a Fixes, Closes or Resolves keyword. If an open one exists, skip. Pull requests authored by the coder bot are excluded from this check so it can re-dispatch on its own branch.</li>
+      <li>Build the event payload: issue, pull request head and base, and the comment body truncated to 4096 bytes.</li>
+    </ol>
+
+    <h3>What one agent run looks like</h3>
+    <p>Every stage job has the same five phases. The trust boundary is the sandbox wall: nothing inside it can write to GitHub.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 4 940 462" role="img" aria-label="Inside one GitHub Actions runner: mint a scoped token, run the pre-script, run the agent in a network-restricted sandbox, validate its JSON output against a schema, then run the post-script which is the only step that writes to GitHub.">
+          <defs>
+            <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <polygon points="0,0 10,5 0,10" fill="currentColor"></polygon>
+            </marker>
+          </defs>
+
+          <rect x="8" y="30" width="924" height="424" rx="10" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".3"></rect>
+          <text x="24" y="20" font-family="JetBrains Mono, monospace" font-size="11" fill="currentColor" opacity=".55">GITHUB ACTIONS RUNNER &middot; ubuntu-24.04 &middot; one job, one stage</text>
+
+          <!-- 1 -->
+          <rect x="34" y="52" width="872" height="50" rx="7" fill="var(--surface)" stroke="currentColor" stroke-opacity=".25"></rect>
+          <text x="52" y="74" font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="currentColor">1 &nbsp;Mint a token</text>
+          <text x="52" y="92" font-family="Libre Franklin, sans-serif" font-size="12" fill="currentColor" opacity=".68">The job's OIDC token goes to the mint. Back comes a GitHub App installation token scoped to this role and this repo.</text>
+          <g stroke="currentColor" stroke-width="1.4" opacity=".5" fill="none" marker-end="url(#ar3)"><path d="M470 102 L470 118"></path></g>
+
+          <!-- 2 -->
+          <rect x="34" y="122" width="872" height="50" rx="7" fill="var(--surface)" stroke="currentColor" stroke-opacity=".25"></rect>
+          <text x="52" y="144" font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="currentColor">2 &nbsp;Pre-script</text>
+          <text x="52" y="162" font-family="Libre Franklin, sans-serif" font-size="12" fill="currentColor" opacity=".68">Validate inputs. For fix: check the round limit. For review: fetch the previous review so the agent can judge whether it was addressed.</text>
+          <g stroke="currentColor" stroke-width="1.4" opacity=".5" fill="none" marker-end="url(#ar3)"><path d="M470 172 L470 188"></path></g>
+
+          <!-- 3 sandbox -->
+          <rect x="34" y="192" width="872" height="126" rx="7" fill="var(--agent-bg)" stroke="var(--agent)" stroke-width="1.4" stroke-dasharray="6 4"></rect>
+          <text x="52" y="216" font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="var(--agent)">3 &nbsp;OpenShell sandbox &mdash; the agent runs here</text>
+          <text x="52" y="238" font-family="Libre Franklin, sans-serif" font-size="12" fill="var(--agent)">Mounted in: the repository clone, the agent definition, the skills, AGENTS.md, a read-only token.</text>
+          <text x="52" y="258" font-family="Libre Franklin, sans-serif" font-size="12" fill="var(--agent)">Network is allowed per binary and per endpoint: Vertex AI for the model process, the GitHub API for gh and git,</text>
+          <text x="52" y="276" font-family="Libre Franklin, sans-serif" font-size="12" fill="var(--agent)">package registries for the package managers. Everything else returns 403.</text>
+          <text x="52" y="300" font-family="JetBrains Mono, monospace" font-size="11.5" fill="var(--stop)">No push. No PR. No label. The agent can only hand back a JSON result.</text>
+          <g stroke="currentColor" stroke-width="1.4" opacity=".5" fill="none" marker-end="url(#ar3)"><path d="M470 318 L470 334"></path></g>
+
+          <!-- 4 -->
+          <rect x="34" y="338" width="872" height="50" rx="7" fill="var(--surface)" stroke="currentColor" stroke-opacity=".25"></rect>
+          <text x="52" y="360" font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="currentColor">4 &nbsp;Schema check</text>
+          <text x="52" y="378" font-family="Libre Franklin, sans-serif" font-size="12" fill="currentColor" opacity=".68">The JSON is validated against the agent's schema. Up to 2 retries. Still invalid, or out of time, and the run fails with nothing published.</text>
+          <g stroke="currentColor" stroke-width="1.4" opacity=".5" fill="none" marker-end="url(#ar3)"><path d="M470 388 L470 404"></path></g>
+
+          <!-- 5 -->
+          <rect x="34" y="408" width="872" height="34" rx="7" fill="var(--signal-bg)" stroke="var(--signal)"></rect>
+          <text x="52" y="430" font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="var(--signal)">5 &nbsp;Post-script &mdash; the only step that writes: labels, comments, commits, pull requests</text>
+        </svg>
+      </div>
+      <figcaption>The agent never holds a write credential. Secret scanning, protected-path checks and pre-commit all run in step 5, outside the sandbox, before anything reaches GitHub.</figcaption>
+    </figure>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 4 -->
+  <section id="s4">
+    <div class="sec-head"><span class="sec-num">04</span><h2>The routing rules</h2></div>
+    <p>This table is the routing script, transcribed. Read the Condition column as an exact test. If no row matches, the route step logs "No stage matched" and the run ends.</p>
+
+    <h3>Event: <code>issues</code></h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Action</th><th>Condition</th><th>Stage</th></tr></thead>
+        <tbody>
+          <tr><td><code>opened</code></td><td>The issue author has <b>triage</b> permission or higher</td><td><span class="tag bot">triage</span></td></tr>
+          <tr><td><code>edited</code></td><td>The event sender has <b>triage</b> permission or higher</td><td><span class="tag bot">triage</span></td></tr>
+          <tr><td><code>labeled</code></td><td>The added label is <span class="tag go">ready-for-triage</span>. No permission test.</td><td><span class="tag bot">triage</span></td></tr>
+          <tr><td><code>labeled</code></td><td>The added label is <span class="tag go">ready-to-code</span> <b>and</b> the labeller is a bot or has <b>write</b> permission</td><td><span class="tag bot">code</span></td></tr>
+          <tr><td><code>labeled</code></td><td>The added label is <span class="tag go">ready-for-review</span> <b>and</b> the item is a pull request</td><td><span class="tag bot">review</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Event: <code>pull_request_target</code></h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Action</th><th>Condition</th><th>Stage</th></tr></thead>
+        <tbody>
+          <tr><td><code>opened</code>, <code>synchronize</code>, <code>ready_for_review</code></td><td>The pull request author is a bot, or has <b>triage</b> permission or higher</td><td><span class="tag bot">review</span></td></tr>
+          <tr><td><code>labeled</code></td><td>The added label is <span class="tag go">ready-for-review</span></td><td><span class="tag bot">review</span></td></tr>
+          <tr><td><code>closed</code></td><td>Always. Deliberately ungated, because retro only reads and files issues.</td><td><span class="tag bot">retro</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Event: <code>pull_request_review</code></h3>
+    <p>This is the one rule with a compound condition, and it is the rule people misread. Every clause must hold.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Clause</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>The review state is <code>changes_requested</code></td></tr>
+          <tr><td class="num">2</td><td>The reviewer is <code>fullsend-ai-review[bot]</code> or <code>&lt;org&gt;-review[bot]</code>. <b>A human review never matches.</b></td></tr>
+          <tr><td class="num">3</td><td>The pull request head repository equals the base repository. Fork pull requests are blocked, and an unknown answer fails closed.</td></tr>
+          <tr><td class="num">4</td><td>The pull request does <b>not</b> carry <span class="tag stop">fullsend-no-fix</span></td></tr>
+          <tr><td class="num">5</td><td>Either the pull request author is a bot, or the pull request carries <span class="tag you">fullsend-fix</span> and its author has <b>write</b> permission</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>All five true gives stage <span class="tag bot">fix</span>, with the review bot recorded as the trigger source.</p>
+
+    <h3>Event: <code>issue_comment</code></h3>
+    <p>The first whitespace-delimited word of the first line is taken as the command, with trailing punctuation stripped. Bot comments are filtered out at the job level.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Command</th><th>Context required</th><th>Permission</th><th>Stage</th></tr></thead>
+        <tbody>
+          <tr><td><code>/fs-triage</code></td><td>any</td><td>triage or higher</td><td><span class="tag bot">triage</span></td></tr>
+          <tr><td><code>/fs-code</code></td><td>issue, not a pull request</td><td>write or higher</td><td><span class="tag bot">code</span></td></tr>
+          <tr><td><code>/fs-review</code></td><td>pull request only</td><td>triage or higher</td><td><span class="tag bot">review</span></td></tr>
+          <tr><td><code>/fs-fix</code></td><td>pull request only</td><td>write or higher</td><td><span class="tag bot">fix</span></td></tr>
+          <tr><td><code>/fs-retro</code></td><td>any</td><td>write or higher</td><td><span class="tag bot">retro</span></td></tr>
+          <tr><td><code>/fs-prioritize</code></td><td>any</td><td>write or higher</td><td><span class="tag bot">prioritize</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p class="panel-label">How permission is resolved</p>
+      <p>Not from <code>author_association</code>. The route step calls <code>repos/{owner}/{repo}/collaborators/{user}/permission</code> and accepts <code>admin</code>, <code>maintain</code> or <code>write</code>; <code>triage</code> is accepted only where the table says triage-level is enough. The API resolves organisation membership even when it is private. If the call fails, the answer is no.</p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 5 -->
+  <section id="s5">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Labels as the state machine</h2></div>
+    <p>Fullsend keeps no state of its own. The labels are the state, GitHub stores them, and agents hand off to each other by applying one. That is why a bot applying a label re-enters the router as a fresh event.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="-1 14 1042 306" role="img" aria-label="Issue to triage to code to review, with fix looping back into review, then merge, then retro, which files a new issue back at the start.">
+          <defs>
+            <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <polygon points="0,0 10,5 0,10" fill="currentColor"></polygon>
+            </marker>
+          </defs>
+
+          <g font-family="Archivo, sans-serif" font-size="13.5" font-weight="700">
+            <rect x="10" y="56" width="120" height="54" rx="7" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".3"></rect>
+            <text x="70" y="88" text-anchor="middle" fill="currentColor">Issue</text>
+
+            <rect x="180" y="56" width="120" height="54" rx="7" fill="var(--agent-bg)" stroke="var(--agent)"></rect>
+            <text x="240" y="88" text-anchor="middle" fill="var(--agent)">Triage</text>
+
+            <rect x="350" y="56" width="120" height="54" rx="7" fill="var(--agent-bg)" stroke="var(--agent)"></rect>
+            <text x="410" y="88" text-anchor="middle" fill="var(--agent)">Code</text>
+
+            <rect x="520" y="56" width="120" height="54" rx="7" fill="var(--agent-bg)" stroke="var(--agent)"></rect>
+            <text x="580" y="88" text-anchor="middle" fill="var(--agent)">Review</text>
+
+            <rect x="520" y="182" width="120" height="54" rx="7" fill="var(--agent-bg)" stroke="var(--agent)"></rect>
+            <text x="580" y="214" text-anchor="middle" fill="var(--agent)">Fix</text>
+
+            <rect x="690" y="56" width="120" height="54" rx="7" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".3"></rect>
+            <text x="750" y="88" text-anchor="middle" fill="currentColor">Merged</text>
+
+            <rect x="860" y="56" width="120" height="54" rx="7" fill="var(--agent-bg)" stroke="var(--agent)"></rect>
+            <text x="920" y="88" text-anchor="middle" fill="var(--agent)">Retro</text>
+          </g>
+
+          <g stroke="currentColor" stroke-width="1.4" opacity=".55" fill="none" marker-end="url(#ar4)">
+            <path d="M130 83 L176 83"></path>
+            <path d="M300 83 L346 83"></path>
+            <path d="M470 83 L516 83"></path>
+            <path d="M640 83 L686 83"></path>
+            <path d="M810 83 L856 83"></path>
+            <path d="M556 110 L556 178"></path>
+            <path d="M604 178 L604 110"></path>
+          </g>
+
+          <g font-family="JetBrains Mono, monospace" font-size="10.5" fill="currentColor" opacity=".8">
+            <text x="153" y="42" text-anchor="middle">opened / edited</text>
+            <text x="323" y="42" text-anchor="middle" fill="var(--signal)">ready-to-code</text>
+            <text x="323" y="28" text-anchor="middle" fill="var(--stop)">a human adds this here</text>
+            <text x="493" y="42" text-anchor="middle" fill="var(--signal)">ready-for-review</text>
+            <text x="493" y="28" text-anchor="middle">PR opened</text>
+            <text x="663" y="42" text-anchor="middle" fill="var(--signal)">ready-for-merge</text>
+            <text x="833" y="42" text-anchor="middle">PR closed</text>
+            <text x="548" y="148" text-anchor="end">changes</text>
+            <text x="548" y="160" text-anchor="end">requested</text>
+            <text x="614" y="148">new</text>
+            <text x="614" y="160">commit</text>
+          </g>
+
+          <!-- triage outcomes -->
+          <g font-family="JetBrains Mono, monospace" font-size="10.5">
+            <text x="180" y="152" fill="currentColor" opacity=".55">TRIAGE MAY INSTEAD APPLY</text>
+            <rect x="180" y="162" width="72" height="22" rx="4" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".22"></rect>
+            <text x="216" y="177" text-anchor="middle" fill="currentColor" opacity=".8">triaged</text>
+            <rect x="260" y="162" width="82" height="22" rx="4" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".22"></rect>
+            <text x="301" y="177" text-anchor="middle" fill="currentColor" opacity=".8">needs-info</text>
+            <rect x="180" y="192" width="72" height="22" rx="4" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".22"></rect>
+            <text x="216" y="207" text-anchor="middle" fill="currentColor" opacity=".8">blocked</text>
+            <rect x="260" y="192" width="82" height="22" rx="4" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".22"></rect>
+            <text x="301" y="207" text-anchor="middle" fill="currentColor" opacity=".8">duplicate</text>
+          </g>
+
+          <!-- retro back to issue -->
+          <g stroke="currentColor" stroke-width="1.4" opacity=".55" fill="none" marker-end="url(#ar4)">
+            <path d="M920 110 L920 300 L70 300 L70 114"></path>
+          </g>
+          <text x="495" y="292" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="var(--signal)">retro files a new issue labelled ready-for-triage &mdash; the pipeline feeds itself</text>
+        </svg>
+      </div>
+      <figcaption>The only cycle in the system that is not the review loop: retro turns a finished pull request into new triaged work.</figcaption>
+    </figure>
+
+    <h3>Every label, and who reads it</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Label</th><th>Applied by</th><th>Read by the router?</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag go">ready-for-triage</span></td><td>Retro post-script, or a human</td><td>Yes, on issues</td><td>Dispatches triage, no permission test</td></tr>
+          <tr><td><span class="tag go">ready-to-code</span></td><td>A human on ProtoBot. Triage post-script elsewhere.</td><td>Yes, on issues</td><td>Dispatches code, if the labeller is a bot or has write</td></tr>
+          <tr><td><span class="tag go">ready-for-review</span></td><td>Code post-script after pushing</td><td>Yes, on pull requests</td><td>Dispatches review</td></tr>
+          <tr><td><span class="tag stop">fullsend-no-fix</span></td><td><code>/fs-fix-stop</code></td><td>Yes, in the fix rule</td><td>Blocks automatic fix runs. Manual <code>/fs-fix</code> still works.</td></tr>
+          <tr><td><span class="tag you">fullsend-fix</span></td><td>A human</td><td>Yes, in the fix rule</td><td>Opts a human-authored pull request into automatic fixing</td></tr>
+          <tr><td><span class="tag">triaged</span></td><td>Triage post-script</td><td>No</td><td>Clear issue, waiting on human prioritisation</td></tr>
+          <tr><td><span class="tag">needs-info</span></td><td>Triage post-script</td><td>No</td><td>Questions posted. Re-run with <code>/fs-triage</code> after answering.</td></tr>
+          <tr><td><span class="tag">blocked</span></td><td>Triage post-script</td><td>No</td><td>Prerequisite identified or filed. Re-triage checks if it cleared.</td></tr>
+          <tr><td><span class="tag">duplicate</span></td><td>Triage post-script</td><td>No</td><td>Issue closed, canonical issue linked</td></tr>
+          <tr><td><span class="tag">ready-for-merge</span></td><td>Review post-script</td><td>No</td><td>Approved at that exact head SHA. Removed on the next round.</td></tr>
+          <tr><td><span class="tag">requires-manual-review</span></td><td>Review post-script</td><td>No</td><td>The agent could not confidently approve or reject</td></tr>
+          <tr><td><span class="tag">rejected</span></td><td>Review post-script</td><td>No</td><td>Rejected, and the pull request was closed</td></tr>
+          <tr><td><span class="tag">risk/low</span> <span class="tag">risk/moderate</span></td><td>Review post-script</td><td>No</td><td>The risk score, with its reasoning in a details block</td></tr>
+          <tr><td><span class="tag stop">needs-human</span></td><td>Fix post-script</td><td>No</td><td>The automatic round limit is close. Direction needed.</td></tr>
+          <tr><td><span class="tag">pr-open</span></td><td>Automation</td><td>No</td><td>An open pull request already addresses this issue</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Stale outcome labels from an earlier review round are removed before the new one is applied, so <span class="tag">ready-for-merge</span> always describes the current head commit and never an older one.</p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 6 -->
+  <section id="s6">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Slash commands</h2></div>
+    <p>Commands are parsed from the first word of the first line. They are the manual override for every automatic path, and two of them accept free text.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Command</th><th>Arguments</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>/fs-triage</code></td><td>none</td><td>Re-evaluates the issue from current content and any prior triage analysis. Reopens a closed issue.</td></tr>
+          <tr><td><code>/fs-code</code></td><td>optional <code>--force</code></td><td>Issues only. The open-pull-request guard still applies unless forced.</td></tr>
+          <tr><td><code>/fs-review</code></td><td>none</td><td>Queues a review round against the current head SHA.</td></tr>
+          <tr><td><code>/fs-fix</code></td><td>free text, up to 10,000 bytes</td><td>The text becomes <code>HUMAN_INSTRUCTION</code> and outranks the review body. Cancels any fix run already in flight on this pull request.</td></tr>
+          <tr><td><code>/fs-fix-stop</code></td><td>none</td><td>Handled by a separate job in the shim, not by the router. Adds the label and posts a confirmation.</td></tr>
+          <tr><td><code>/fs-retro</code></td><td>free text</td><td>The text is passed as high-signal direction about what to analyse.</td></tr>
+          <tr><td><code>/fs-prioritize</code></td><td>none</td><td>Scores the issue and writes to the project board.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What the fix agent can and cannot read</h3>
+    <p>This is the single most useful thing to know about <code>/fs-fix</code>, and it explains the instructions written on pull request 61.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Input</th><th>Read?</th></tr></thead>
+        <tbody>
+          <tr><td>The consolidated review body from the review bot</td><td>Yes, injected as <code>review-body.txt</code></td></tr>
+          <tr><td>Your free text after <code>/fs-fix</code></td><td>Yes, and it takes precedence</td></tr>
+          <tr><td>The pull request diff and the full repository at head</td><td>Yes</td></tr>
+          <tr><td><code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CONTRIBUTING.md</code></td><td>Yes</td></tr>
+          <tr><td><b>Inline review comments on individual lines</b></td><td><b>No.</b> Paste them into the command.</td></tr>
+          <tr><td>Other discussion comments on the pull request</td><td>No</td></tr>
+          <tr><td>CI logs and check status</td><td>No. That is the code agent's job during implementation.</td></tr>
+          <tr><td>The linked issue body</td><td>No</td></tr>
+          <tr><td>Cross-repo URLs, gists, external pages</td><td>No. The sandbox proxy returns 403 and the token is scoped to this repo.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 7 -->
+  <section id="s7">
+    <div class="sec-head"><span class="sec-num">07</span><h2>The review and fix loop</h2></div>
+    <p>This loop consumes 47 percent of all runs on ProtoBot and 58 percent of the spend. Understanding its exits is the highest-value part of this page.</p>
+
+    <h3>What one review run actually does</h3>
+    <ol class="body">
+      <li>The pre-script fetches pull request metadata and any prior review.</li>
+      <li>Inside the sandbox the agent runs the <code>pr-review</code> orchestrator skill. The orchestrator triages the change, then dispatches sub-agents <b>in parallel</b>, one per dimension: correctness, security, intent and coherence, style and conventions, documentation currency, and optionally cross-repo contracts.</li>
+      <li>The orchestrator collects the sub-agent findings, removes duplicates, and runs pull-request-level checks for scope authorisation and protected paths.</li>
+      <li>It emits one JSON review result, which is validated against the schema with up to 2 retries.</li>
+      <li>The post-script posts the review, the risk assessment, and the outcome label.</li>
+    </ol>
+    <p>Findings below the <code>REVIEW_FINDING_SEVERITY_THRESHOLD</code> are dropped from both the narrative and the inline comments. The default is <code>low</code>, so on ProtoBot you see everything above informational.</p>
+
+    <h3>The four outcomes</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Outcome</th><th>Label applied</th><th>What happens next</th></tr></thead>
+        <tbody>
+          <tr><td>Approve</td><td><span class="tag">ready-for-merge</span></td><td>Loop ends. Merge under your normal governance.</td></tr>
+          <tr><td>Request changes</td><td><b>None</b></td><td>The <code>pull_request_review</code> event dispatches the fix agent directly.</td></tr>
+          <tr><td>Cannot decide</td><td><span class="tag">requires-manual-review</span></td><td>A human must judge it.</td></tr>
+          <tr><td>Reject</td><td><span class="tag">rejected</span></td><td>The post-script closes the pull request.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Round limits and concurrency</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Control</th><th>Value</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>Bot-triggered fix rounds</td><td class="num">5</td><td>Per pull request. Configurable.</td></tr>
+          <tr><td>Total fix rounds</td><td class="num">10</td><td>Bot and human rounds share one counter.</td></tr>
+          <tr><td>Warning threshold</td><td>before the bot cap</td><td>The fix post-script applies <span class="tag stop">needs-human</span>.</td></tr>
+          <tr><td>Schema retries</td><td class="num">2</td><td>Per agent run. Exhaustion is a hard failure with nothing published.</td></tr>
+          <tr><td>Concurrency group</td><td><code>fullsend-&lt;stage&gt;-&lt;repo&gt;-&lt;number&gt;</code></td><td><code>cancel-in-progress</code>. A new push cancels the review still running on the old commit. Roles do not block each other.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <p class="panel-label">Why the run list is full of cancellations</p>
+      <p>20 of 109 review runs on ProtoBot were cancelled. That is the concurrency group doing its job, not a fault. The cancelled run was reviewing a commit that no longer matters. On pull request 61 you can see this at 21:21 and again at 13:46.</p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 8 -->
+  <section id="s8">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Pull request 61, step by step</h2></div>
+    <p>ProtoBot pull request 61, "docs(#46): define logical schema for EARS specification records", from issue 46. Every routing rule, both fix modes, and the round limit appear in one story.</p>
+
+    <ul class="tl">
+      <li class="a-human"><span class="tl-t">3 Sep 16:19</span><span class="tl-b"><b>Issue 46 opened.</b><span class="sub">Event <code>issues.opened</code>. The author has write permission, so the router picks stage triage.</span></span></li>
+      <li class="a-bot"><span class="tl-t">3 Sep 16:25</span><span class="tl-b"><b>Triage applies <span class="tag">feature</span> and <span class="tag">triaged</span>.</b><span class="sub">Run 33777922722, five minutes. It stops here because <code>TRIAGE_AUTO_CODE</code> is off in this repository.</span></span></li>
+      <li class="a-human"><span class="tl-t">8 Sep 19:28</span><span class="tl-b"><b><code>/fs-code</code>.</b><span class="sub">Stage code. The agent finished, then the post-script failed: pre-commit blocked the push. Nothing was published.</span></span></li>
+      <li class="a-human"><span class="tl-t">8 Sep 21:07</span><span class="tl-b"><b><code>/fs-code</code> again.</b></span></li>
+      <li class="a-bot"><span class="tl-t">8 Sep 21:19</span><span class="tl-b"><b>Pull request 61 opened on <code>agent/46-ears-schema-adr</code>.</b><span class="sub">The code post-script applies <span class="tag go">ready-for-review</span> and requests a review. Two review dispatches fire: one from <code>pull_request_target.opened</code>, one from the label.</span></span></li>
+      <li class="a-bot"><span class="tl-t">8 Sep 21:21</span><span class="tl-b"><b>The first review run is cancelled by the second.</b><span class="sub">Same concurrency group.</span></span></li>
+      <li class="a-bot"><span class="tl-t">8 Sep 21:55</span><span class="tl-b"><b>Review approves. Applies <span class="tag">ready-for-merge</span>.</b><span class="sub">Run 34279995911, 33 minutes, $3.22.</span></span></li>
+      <li class="a-human"><span class="tl-t">9 Sep 13:14</span><span class="tl-b"><b>A human submits <code>changes_requested</code> with 8 blocking inline comments.</b><span class="sub">No fix agent runs. Clause 2 of the fix rule fails: the reviewer is not the review bot.</span></span></li>
+      <li class="a-human"><span class="tl-t">9 Sep 13:40</span><span class="tl-b"><b><code>/fs-fix-stop</code> &rarr; <span class="tag stop">fullsend-no-fix</span>.</b><span class="sub">Handled by the <code>stop-fix</code> job in the shim, not by the router.</span></span></li>
+      <li class="a-human"><span class="tl-t">9 Sep 13:41</span><span class="tl-b"><b><code>/fs-fix</code> with instructions on how to fetch the inline comments.</b><span class="sub">Superseded six minutes later by a corrected instruction, which cancelled the first fix run.</span></span></li>
+      <li class="a-bot"><span class="tl-t">9 Sep 13:50</span><span class="tl-b"><b>Review requests changes, applies <span class="tag">risk/moderate</span> (2 of 5), removes <span class="tag">ready-for-merge</span>.</b><span class="sub">Run 34357760874, $4.23. No automatic fix follows, because <span class="tag stop">fullsend-no-fix</span> is on.</span></span></li>
+      <li class="a-bot"><span class="tl-t">9 Sep 14:00</span><span class="tl-b"><b>Fix iteration 1, human-triggered. Nine findings addressed.</b><span class="sub">Run 34359321971, $4.61.</span></span></li>
+      <li class="a-bot"><span class="tl-t">9 Sep 14:44</span><span class="tl-b"><b>A review run fails its own schema check after 2 iterations.</b><span class="sub">Run 34360807767. Nothing was posted, which is the designed behaviour.</span></span></li>
+      <li class="a-bot"><span class="tl-t">9 Sep 14:46</span><span class="tl-b"><b>Fix iteration 2, human-triggered. Six findings.</b><span class="sub">Run 34364598186, $2.18. One finding could not be done: the sandbox token cannot open an issue in another repository.</span></span></li>
+      <li class="a-human"><span class="tl-t">9 Sep 14:50</span><span class="tl-b"><b>The human approves, then removes <span class="tag stop">fullsend-no-fix</span> at 14:57.</b><span class="sub">Clause 4 now passes, so the loop becomes automatic.</span></span></li>
+      <li class="a-bot"><span class="tl-t">9 Sep 15:29</span><span class="tl-b"><b>Review requests changes. Fix iteration 3 follows without a human.</b><span class="sub">$7.66 then $1.73.</span></span></li>
+      <li class="a-bot"><span class="tl-t">9 Sep 15:59</span><span class="tl-b"><b>Review requests changes. Fix iteration 4 follows.</b><span class="sub">$7.85 then $2.09.</span></span></li>
+      <li class="a-bot"><span class="tl-t">9 Sep 16:09</span><span class="tl-b"><b>Fix applies <span class="tag stop">needs-human</span>.</b><span class="sub">Four automatic rounds of five used. The warning threshold fires before the cap, not at it.</span></span></li>
+    </ul>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Pull request 61 totals</th><th class="num">Value</th></tr></thead>
+        <tbody>
+          <tr><td>Review runs (1 cancelled, 1 schema failure)</td><td class="num">6</td></tr>
+          <tr><td>Fix runs (1 cancelled)</td><td class="num">5</td></tr>
+          <tr><td>Model cost across all reported runs</td><td class="num">$33.57</td></tr>
+          <tr><td>Elapsed from PR open to <span class="tag stop">needs-human</span></td><td class="num">19 h</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 9 -->
+  <section id="s9">
+    <div class="sec-head"><span class="sec-num">09</span><h2>The guard rails</h2></div>
+    <p>Fullsend's threat model ranks external injection above insider risk, above drift, above supply chain. These controls follow that order.</p>
+
+    <h3>The pull_request_target design</h3>
+    <p>The shim runs on <code>pull_request_target</code>, so GitHub always executes the copy of the workflow on the base branch. A contributor cannot edit the workflow in their pull request and have their version run. The shim itself never checks out pull request code, and the router's checkout is a sparse checkout of <code>.fullsend/config.yaml</code> pinned to the base SHA. That is what makes it safe to hand this workflow write permissions.</p>
+
+    <h3>Credentials</h3>
+    <ul>
+      <li>No long-lived GitHub secret is stored in the repository. The job exchanges its OIDC token at the token mint for a GitHub App installation token scoped to one role and this repository.</li>
+      <li>Each role is a separate GitHub App with its own permission set. The coder token has <b>no</b> workflow write permission, so a code agent cannot modify files under <code>.github/workflows/</code>.</li>
+      <li>The read-only token enters the sandbox. The read-write token stays on the runner.</li>
+      <li>Model credentials never enter the sandbox at all. They are delivered through OpenShell provider profiles with layer-7 endpoint allowlists.</li>
+    </ul>
+
+    <h3>Sandbox</h3>
+    <ul>
+      <li>Network is granted per provider profile and enforced per binary: Vertex AI for the model process, the GitHub API for <code>gh</code> and <code>git</code>, package registries for package managers. Everything else is refused.</li>
+      <li>A context scan runs before the agent starts, checking <code>AGENTS.md</code>, <code>CLAUDE.md</code> and similar files for prompt injection.</li>
+      <li><code>allowed_remote_resources</code> in config limits which URLs a harness may compose from. ProtoBot allows only the two <code>fullsend-ai</code> raw content paths.</li>
+    </ul>
+
+    <h3>Output and loop control</h3>
+    <ul>
+      <li>Every agent output is validated against a JSON schema on the host, with 2 retries. An unvalidated result is never published.</li>
+      <li>A run killed at <code>timeout_minutes</code> is not retried. It ends with a timeout error.</li>
+      <li>Fix rounds are capped at 5 automatic and 10 total per pull request.</li>
+      <li>Fork pull requests cannot trigger the fix agent, and an unknown fork status fails closed.</li>
+      <li><code>kill_switch: true</code> in <code>.fullsend/config.yaml</code> fails every dispatch at the router.</li>
+    </ul>
+
+    <p>Repository governance is unchanged by all of this. Branch protection, required checks and CODEOWNERS apply to agent pull requests exactly as they apply to yours. Trust comes from repository permissions, not from which bot identity holds the token.</p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 10 -->
+  <section id="s10">
+    <div class="sec-head"><span class="sec-num">10</span><h2>ProtoBot's configuration</h2></div>
+    <p>The full per-repo config, annotated. This is the file to change when you want different behaviour.</p>
+
+<pre><span class="c"># .fullsend/config.yaml</span>
+version: "1"
+runtime: <b>claude</b>                       <span class="c"># the agent runtime; 'pi' is the alternative</span>
+roles:                               <span class="c"># which stages may dispatch at all</span>
+  - triage
+  - coder                            <span class="c"># covers both the code and fix stages</span>
+  - review
+  - fix
+  - retro
+  - prioritize
+agents:
+  - name: triage
+    source: harness/triage.yaml      <span class="c"># the one customised harness</span>
+allowed_remote_resources:            <span class="c"># harnesses may compose only from these</span>
+  - https://raw.githubusercontent.com/fullsend-ai/fullsend/
+  - https://raw.githubusercontent.com/fullsend-ai/agents/
+create_issues:
+  allow_targets:
+    repos:
+      - redhat-et/ProtoBot
+      - fullsend-ai/fullsend         <span class="c"># triage and retro may file upstream bugs</span>
+      - fullsend-ai/agents
+inference:
+  project: it-gcp-octo-fullsend
+  wif_provider: projects/554959098399/.../providers/gh-redhat-et-protobot
+status_notifications:
+  reaction:   { start: <b>enabled</b>,  completion: <b>enabled</b>  }
+  comment:    { start: <b>disabled</b>, completion: <b>enabled</b> }
+</pre>
+
+<pre><span class="c"># .fullsend/harness/triage.yaml  — the whole file</span>
+base: "https://raw.githubusercontent.com/fullsend-ai/agents/<b>v0.40.0</b>/harness/triage.yaml#sha256=97aa8285..."
+env:
+  runner:
+    <b>TRIAGE_AUTO_CODE: "off"</b>
+</pre>
+
+    <h3>The five deliberate differences from stock</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Change</th><th>Upstream default</th><th>Here</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Triage hand-off</td>
+            <td><code>TRIAGE_AUTO_CODE: "on"</code> for categories <code>bug,documentation,performance</code></td>
+            <td><code>"off"</code> since 8 Sep 2026</td>
+            <td>The triage post-script never applies <span class="tag go">ready-to-code</span>. It always applies <span class="tag">triaged</span>. Every code run is started by a person.</td>
+          </tr>
+          <tr>
+            <td>Renovate pull requests</td>
+            <td>Reviewed like any other</td>
+            <td>Excluded in the shim's job condition for <code>opened</code>, <code>synchronize</code>, <code>ready_for_review</code> and the <span class="tag go">ready-for-review</span> label</td>
+            <td>No review spend on dependency bumps. Retro on close still runs.</td>
+          </tr>
+          <tr>
+            <td>Status notifications</td>
+            <td>Start and completion comments</td>
+            <td>Start is a reaction, completion is a comment</td>
+            <td>Fewer notifications. A running agent shows as an emoji reaction on the issue.</td>
+          </tr>
+          <tr>
+            <td>Cross-repo issue filing</td>
+            <td>This repository only</td>
+            <td>Plus <code>fullsend-ai/fullsend</code> and <code>fullsend-ai/agents</code></td>
+            <td>Agents can file upstream bugs. The fix agent still cannot: its sandbox token is scoped to this repo.</td>
+          </tr>
+          <tr>
+            <td>CodeRabbit</td>
+            <td>Skips App-bot pull requests</td>
+            <td>A local workflow comments <code>@coderabbitai review</code> on every coder-bot pull request</td>
+            <td>Agent pull requests get the same third-party review as human ones.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Repository context that shapes every agent</h3>
+    <ul>
+      <li><code>AGENTS.md</code> is read by all six agents. ProtoBot's version defines the specification document hierarchy and the rules for changing anything under <code>docs/</code>. It also instructs review agents to check cross-document coverage.</li>
+      <li><code>.agents/skills/</code> holds three local skills: <code>pull-request</code>, <code>rebase-pr</code> and <code>review-pr</code>. <code>.claude/skills</code> is a symlink to that directory, so local Claude Code sessions and Fullsend agents load the same set.</li>
+      <li>The version is pinned. Both the shim and <code>prioritize.yml</code> call the upstream reusable workflows at commit <code>2a10349</code>, tag <code>v0.40.0</code>. Renovate proposes the bump when a new tag ships.</li>
+    </ul>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 11 -->
+  <section id="s11">
+    <div class="sec-head"><span class="sec-num">11</span><h2>By the numbers</h2></div>
+    <p>230 completed agent runs on ProtoBot between 2 and 9 September 2026, read from the status comments each run posts. Costs are self-reported by the agents.</p>
+
+    <div class="chartgrid">
+      <div class="chart">
+        <h4>Runs by agent</h4>
+        <p class="sub">230 runs total</p>
+        <div class="bars">
+          <div class="barrow"><span class="barlabel">Review</span><span class="bartrack"><span class="bar" style="width:100%"></span><span class="barval">109</span></span></div>
+          <div class="barrow"><span class="barlabel">Triage</span><span class="bartrack"><span class="bar" style="width:45.9%"></span><span class="barval">50</span></span></div>
+          <div class="barrow"><span class="barlabel">Fix</span><span class="bartrack"><span class="bar" style="width:27.5%"></span><span class="barval">30</span></span></div>
+          <div class="barrow"><span class="barlabel">Retro</span><span class="bartrack"><span class="bar" style="width:26.6%"></span><span class="barval">29</span></span></div>
+          <div class="barrow"><span class="barlabel">Code</span><span class="bartrack"><span class="bar" style="width:11.0%"></span><span class="barval">12</span></span></div>
+        </div>
+      </div>
+
+      <div class="chart">
+        <h4>Reported cost by agent</h4>
+        <p class="sub">US dollars &middot; $579.63 total</p>
+        <div class="bars">
+          <div class="barrow"><span class="barlabel">Review</span><span class="bartrack"><span class="bar" style="width:100%"></span><span class="barval">338.29</span></span></div>
+          <div class="barrow"><span class="barlabel">Retro</span><span class="bartrack"><span class="bar" style="width:36.8%"></span><span class="barval">124.58</span></span></div>
+          <div class="barrow"><span class="barlabel">Fix</span><span class="bartrack"><span class="bar" style="width:15.0%"></span><span class="barval">50.70</span></span></div>
+          <div class="barrow"><span class="barlabel">Triage</span><span class="bartrack"><span class="bar" style="width:10.5%"></span><span class="barval">35.36</span></span></div>
+          <div class="barrow"><span class="barlabel">Code</span><span class="bartrack"><span class="bar" style="width:9.1%"></span><span class="barval">30.70</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart" style="margin:20px 0;">
+      <h4>Loop length per pull request</h4>
+      <p class="sub">Review rounds against fix rounds &middot; ten busiest pull requests</p>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--agent)"></i>Review rounds</span>
+        <span><i class="swatch" style="background:var(--signal)"></i>Fix rounds</span>
+      </div>
+      <div class="bars">
+        <div class="grouprow"><span class="barlabel">PR 41</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:100%"></span><span class="barval">11</span></span>
+          <span class="bartrack"><span class="bar s2" style="width:90.9%"></span><span class="barval">10</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 39</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:72.7%"></span><span class="barval">8</span></span>
+          <span class="bartrack"><span class="bar s2" style="width:63.6%"></span><span class="barval">7</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 47</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:63.6%"></span><span class="barval">7</span></span>
+          <span class="bartrack"><span class="bar s2" style="width:54.5%"></span><span class="barval">6</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 61</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:54.5%"></span><span class="barval">6</span></span>
+          <span class="bartrack"><span class="bar s2" style="width:45.5%"></span><span class="barval">5</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 53</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:54.5%"></span><span class="barval">6</span></span>
+          <span class="bartrack"><span class="barval">0</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 64</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:45.5%"></span><span class="barval">5</span></span>
+          <span class="bartrack"><span class="barval">0</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 60</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:45.5%"></span><span class="barval">5</span></span>
+          <span class="bartrack"><span class="barval">0</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 44</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:45.5%"></span><span class="barval">5</span></span>
+          <span class="bartrack"><span class="barval">0</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 59</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:18.2%"></span><span class="barval">2</span></span>
+          <span class="bartrack"><span class="bar s2" style="width:9.1%"></span><span class="barval">1</span></span></span></div>
+        <div class="grouprow"><span class="barlabel">PR 40</span><span class="pair">
+          <span class="bartrack"><span class="bar" style="width:18.2%"></span><span class="barval">2</span></span>
+          <span class="bartrack"><span class="bar s2" style="width:9.1%"></span><span class="barval">1</span></span></span></div>
+      </div>
+    </div>
+
+    <h3>Run outcomes</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Agent</th><th class="num">Success</th><th class="num">Cancelled</th><th class="num">Failed</th><th class="num">Total</th><th class="num">Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Review</td><td class="num">87</td><td class="num">20</td><td class="num">1</td><td class="num">109</td><td class="num">$338.29</td></tr>
+          <tr><td>Triage</td><td class="num">47</td><td class="num">2</td><td class="num">1</td><td class="num">50</td><td class="num">$35.36</td></tr>
+          <tr><td>Fix</td><td class="num">25</td><td class="num">2</td><td class="num">3</td><td class="num">30</td><td class="num">$50.70</td></tr>
+          <tr><td>Retro</td><td class="num">29</td><td class="num">0</td><td class="num">0</td><td class="num">29</td><td class="num">$124.58</td></tr>
+          <tr><td>Code</td><td class="num">11</td><td class="num">0</td><td class="num">1</td><td class="num">12</td><td class="num">$30.70</td></tr>
+        </tbody>
+        <tfoot><tr><td>All</td><td class="num">199</td><td class="num">24</td><td class="num">6</td><td class="num">230</td><td class="num">$579.63</td></tr></tfoot>
+      </table>
+    </div>
+    <p>One review run was still in flight when this was measured, so the review row sums to 108 finished plus 1 running. Retro is the quiet surprise: 29 runs and no failures, but $124.58 of spend, because it reconstructs a whole workflow graph each time it fires.</p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 12 -->
+  <section id="s12">
+    <div class="sec-head"><span class="sec-num">12</span><h2>Where to look when it goes wrong</h2></div>
+
+    <div class="cheat">
+      <div><span class="want">Nothing happened after an event</span><span class="do">Actions tab &rarr; newest <span class="tag">fullsend</span> run &rarr; the <b>Route</b> job. The log prints either "Routed to stage: X" or "No stage matched &mdash; skipping dispatch". Then check the notices for a role, agent or open-pull-request skip.</span></div>
+      <div><span class="want">A run finished but nothing was posted</span><span class="do">The schema check failed after 2 iterations, or the post-script failed. The completion comment names the reason.</span></div>
+      <div><span class="want">A run says Cancelled</span><span class="do">Normal. A newer event replaced it in the same concurrency group.</span></div>
+      <div><span class="want">The fix agent ignored your review</span><span class="do">Human reviews never trigger it, and inline comments are never read. Comment <code>/fs-fix</code> with your points pasted in.</span></div>
+      <div><span class="want">The fix agent stopped by itself</span><span class="do">Look for <span class="tag stop">needs-human</span> or <span class="tag stop">fullsend-no-fix</span> on the pull request.</span></div>
+      <div><span class="want">You need the transcript of a run</span><span class="do">The run uploads a JSONL transcript as a workflow artifact. The <code>analyze-transcript</code> and <code>replay-session</code> skills in the fullsend checkout read them.</span></div>
+      <div><span class="want">Change what an agent does</span><span class="do">Repo-wide rules go in <code>AGENTS.md</code>. Per-task behaviour goes in a skill under <code>.agents/skills/</code>. Model, effort, image and policy go in a harness override under <code>.fullsend/harness/</code>.</span></div>
+      <div><span class="want">Stop everything</span><span class="do">Set <code>kill_switch: true</code> in <code>.fullsend/config.yaml</code> on the default branch. The router fails every dispatch until you unset it.</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Sources: the Fullsend repository at v0.40.0 (<code>.github/workflows/reusable-dispatch.yml</code>, <code>docs/architecture.md</code>, <code>docs/agents/</code>, the ADR set), the workflows and configuration installed in redhat-et/ProtoBot, the upstream harness and post-scripts in fullsend-ai/agents at v0.40.0, and 230 agent run records from redhat-et/ProtoBot between 2 and 9 September 2026. Costs are the figures the agents reported themselves and exclude GitHub Actions minutes.</p>
+  </footer>
+
+  </main>
+</div>
+</div>
+
+</body>
+</html>
