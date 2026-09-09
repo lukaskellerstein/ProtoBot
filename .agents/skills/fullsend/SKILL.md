@@ -92,6 +92,18 @@ comment**. Nothing else is read.
 - An approval is not dismissed by a later push. Commits pushed after an
   approval merge under it. So freeze a bot PR once a human approves it.
 
+## Protected paths
+
+`REVIEW_PROTECTED_PATHS` in `harness/review.yaml` of `fullsend-ai/agents`
+v0.40.0. The review bot never approves a PR that changes a file under one of
+these prefixes. A maintainer must. `.agents/skills/` is not on the list.
+
+```text
+.claude/ .cursor/ .pi/ .gitattributes .github/ .pre-commit-config.yaml
+AGENTS.md agents/ api-servers/ CLAUDE.md CODEOWNERS Containerfile Dockerfile
+harness/ images/ plugins/ policies/ profiles/ providers/ scripts/ skills/
+```
+
 ## What the bots post
 
 | Post | Author | How to find it |

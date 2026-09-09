@@ -17,8 +17,11 @@ worktree, stop and say so. This skill never commits. It rewrites `main`
 with a rebase and pushes it with a lease. Nothing else.
 
 Fork `main` is `upstream/main` plus the private layer: `lukas/`, the
-private skills under `.agents/skills/`, and `.worktreeinclude`. The
-rebase replays that layer on top of the newest upstream code. It stays
+eight private skills under `.agents/skills/`, and the Claude Code files
+under `.claude/` (`settings.json`, `hooks/`, `rules/`, `CLAUDE.md`).
+`.worktreeinclude` and `.git/info/exclude` belong to the layer too, but
+stay untracked. The rebase replays that layer on top of the newest
+upstream code. It stays
 conflict-free as long as no private commit touches an upstream file.
 Step 3 checks exactly that, before the rebase starts.
 
@@ -52,48 +55,48 @@ already there.
 /.claude/settings.local.json
 /.claude/hooks/
 /.claude/rules/
-/.agents/skills/fullsend/
-/.agents/skills/pr-create/
-/.agents/skills/pr-review/
-/.agents/skills/pr-update/
-/.agents/skills/sync-fork/
-/.agents/skills/prune/
-/.agents/skills/adr/
-/.agents/skills/spec-doc/
+/.claude/CLAUDE.md
+/.agents/skills/fullsend
+/.agents/skills/pr-create
+/.agents/skills/pr-update
+/.agents/skills/adr
+/.agents/skills/spec-doc
+/.agents/skills/pr-review
+/.agents/skills/sync-fork
+/.agents/skills/prune
 ```
 
+The skill lines have no trailing slash on purpose. In a worktree the
+entry is a symlink, git treats a symlink as a file, and a pattern that
+ends with `/` matches only a real directory.
+
 `.worktreeinclude` in the repository root lists what the
-`WorktreeCreate` hook copies into a fresh worktree. Files only, shell
-globs allowed, one per line. Make sure every line below is in it.
+`WorktreeCreate` hook puts into a fresh worktree. One path per line. A
+file line is copied, shell globs allowed. A line that ends with `/` is a
+directory, and the hook links it to the main checkout. The five skills
+that run inside a worktree are links, so an edit on `main` is live
+everywhere at once. `pr-review`, `sync-fork` and `prune` run only in the
+main checkout and are not listed. Make sure every line below is in it.
 Create the file if it is missing.
 
 ```text
 .claude/settings.json
 .claude/hooks/*
 .claude/rules/*
-.agents/skills/fullsend/*
-.agents/skills/fullsend/*/*
-.agents/skills/pr-create/*
-.agents/skills/pr-create/*/*
-.agents/skills/pr-review/*
-.agents/skills/pr-review/*/*
-.agents/skills/pr-update/*
-.agents/skills/pr-update/*/*
-.agents/skills/sync-fork/*
-.agents/skills/sync-fork/*/*
-.agents/skills/prune/*
-.agents/skills/prune/*/*
-.agents/skills/adr/*
-.agents/skills/adr/*/*
-.agents/skills/spec-doc/*
-.agents/skills/spec-doc/*/*
+.claude/CLAUDE.md
+.agents/skills/fullsend/
+.agents/skills/pr-create/
+.agents/skills/pr-update/
+.agents/skills/adr/
+.agents/skills/spec-doc/
 ```
 
-A new private skill means one line in the first block and two in the
-second. Both blocks are in this file, so edit this file first, then run
-the skill.
+A new private skill means one line in the first block, and one in the
+second if it runs inside a worktree. Both blocks are in this file, so
+edit this file first, then run the skill.
 
-Then check that the create hook has a base to cut from:
+Then check that the create hook has a base to cut from. The hook cuts a
+new worktree from `upstream/HEAD`:
 
 ```bash
 git symbolic-ref -q refs/remotes/upstream/HEAD || git remote set-head upstream -a
