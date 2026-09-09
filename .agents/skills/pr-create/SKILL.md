@@ -27,11 +27,13 @@ Stop on the first failure and show the fix.
 
 ```bash
 git fetch upstream --prune
-git ls-files -i -c --exclude-from="$(git rev-parse --path-format=absolute --git-common-dir)/info/exclude"
+git ls-files -i -c --exclude=/lukas/ \
+  --exclude-from="$(git rev-parse --path-format=absolute --git-common-dir)/info/exclude"
 ```
 
-The private paths are the rules in `.git/info/exclude`, and the command lists
-every tracked file on this branch that matches one. Upstream has none of these
+The private paths are the rules in `.git/info/exclude` plus `lukas/`, which
+is private but not in that file, and the command lists every tracked file on
+this branch that matches one. Upstream has none of these
 paths, so a printed path means the branch carries the private layer in its
 history. That file is the one list, and `/sync-fork` keeps it complete. Do not
 pipe the diff into `git check-ignore` here: it aborts on a path behind one of
