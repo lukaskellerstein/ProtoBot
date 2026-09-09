@@ -11,8 +11,14 @@
 #   - the branch is called <name>          (`lukas/44-resolve` is a valid name)
 #   - a worktree that already exists there is adopted, never recreated — that
 #     is how two sessions share one, and how a hand-made worktree is used
-#   - a new worktree branches from origin/<default branch>, after a fetch
+#   - a new worktree branches from upstream/<default branch> when the repo has
+#     an `upstream` remote, else from origin/<default branch>, after a fetch
 #   - an existing branch called <name> is checked out instead of created
+#
+# ProtoBot-only (2026-09-10): the two blocks marked "ProtoBot-only" below are
+# not in the mac-setup template, and mac-setup's /claude-setup overwrites this
+# file on a re-run. This copy is tracked on the fork's main, so after such a
+# run `git diff` shows the loss and `git checkout -- <this file>` restores it.
 #
 # Isolation is unchanged: the native checks, the sandbox and worktree-guard.py
 # all key on the session's cwd, wherever that is. Measured in a probe repo.
@@ -44,13 +50,25 @@ if [ -d "$dir" ]; then
 fi
 
 # Base: the remote default branch, fetched first so "fresh" means fresh.
-# No remote, or origin/HEAD unknown: fall back to the main checkout's HEAD.
-base=$(git -C "$root" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null || true)
+#
+# ProtoBot-only: this repository is a fork. A feature branch must start at
+# upstream/main, never at origin/main — the fork's main carries the private
+# layer (lukas/, the private skills, the .claude/ files) as commits, and a
+# branch cut there would carry them into the pull request. So the `upstream`
+# remote wins when it exists. Without one, origin/<default> as everywhere
+# else. No remote at all: the main checkout's HEAD.
+base=$(git -C "$root" symbolic-ref -q --short refs/remotes/upstream/HEAD 2>/dev/null || true)
+if [ -z "$base" ] && git -C "$root" rev-parse -q --verify refs/remotes/upstream/main >/dev/null 2>&1; then
+  base=upstream/main
+fi
+if [ -z "$base" ]; then
+  base=$(git -C "$root" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null || true)
+fi
 if [ -z "$base" ] && git -C "$root" rev-parse -q --verify refs/remotes/origin/main >/dev/null 2>&1; then
   base=origin/main
 fi
 if [ -n "$base" ]; then
-  git -C "$root" fetch -q origin "${base#origin/}" 2>/dev/null \
+  git -C "$root" fetch -q "${base%%/*}" "${base#*/}" 2>/dev/null \
     || echo "worktree-create: fetch failed, branching from the cached $base" >&2
 else
   base=HEAD
@@ -68,16 +86,33 @@ fi
 # its own copy step when a hook creates the worktree). One path per line,
 # relative to the repo root, shell globs allowed, `#` comments. Only files that
 # exist in the main checkout are copied, and nothing already present is touched.
+#
+# ProtoBot-only: a line that ends with `/` names a directory, and it is linked
+# to the main checkout instead of copied. The private skills use this: an edit
+# on main is live in every worktree at once, and a worktree session cannot edit
+# the link target, because worktree-guard.py denies a write into the main
+# checkout. .git/info/exclude hides the links from git.
 if [ -f "$root/.worktreeinclude" ]; then
   while IFS= read -r pat || [ -n "$pat" ]; do
     case "$pat" in ''|'#'*) continue ;; esac
     (
       cd "$root"
-      for f in $pat; do
-        [ -f "$f" ] && [ ! -e "$dir/$f" ] || continue
-        mkdir -p "$dir/$(dirname "$f")" && cp -p "$f" "$dir/$f" \
-          && echo "worktree-create: copied $f" >&2
-      done
+      case "$pat" in
+        */)
+          d=${pat%/}
+          [ -d "$d" ] && [ ! -e "$dir/$d" ] && [ ! -L "$dir/$d" ] || exit 0
+          mkdir -p "$dir/$(dirname "$d")" && ln -s "$root/$d" "$dir/$d" \
+            && echo "worktree-create: linked $d -> $root/$d" >&2
+          ;;
+        *)
+          # shellcheck disable=SC2086  # the line is a glob on purpose
+          for f in $pat; do
+            [ -f "$f" ] && [ ! -e "$dir/$f" ] || continue
+            mkdir -p "$dir/$(dirname "$f")" && cp -p "$f" "$dir/$f" \
+              && echo "worktree-create: copied $f" >&2
+          done
+          ;;
+      esac
     )
   done < "$root/.worktreeinclude"
 fi

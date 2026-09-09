@@ -60,7 +60,9 @@ Never remove `fullsend-no-fix` in this skill. Phase 4 says why.
 
 2. Read the full diff. Then read every file the diff cites or depends on.
    For design documents, read the sibling documents end to end. Check every
-   claim against its source and every link against its target.
+   claim against its source and every link against its target. If the diff
+   touches `docs/`, run `/spec-doc <path>` in `check` mode for each changed
+   document. Its `MISSING` rows become `issue (blocking)` comments.
 3. Read the bot's sticky review comment. Where a bot finding matches one of
    yours, end your comment with `Same as the Fullsend finding on this
    line.` Then one instruction reaches the fix agent instead of two. If the
