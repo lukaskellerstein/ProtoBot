@@ -137,11 +137,13 @@ Every path touched by a private commit must match a private rule. This
 prints the paths that do not:
 
 ```bash
-git log --format= --name-only upstream/main..main | sort -u \
+git log --format= --name-only upstream/main..main | sort -u | grep -v '^lukas/' \
   | git check-ignore --no-index --stdin -v -n | grep '^::'
 ```
 
-It must print nothing. Each printed line is `::<tab><path>`. For each
+`lukas/` is private by definition and is filtered first, because it is
+not in the exclude file (step 0 says why). It must print nothing. Each
+printed line is `::<tab><path>`. For each
 path, show the commits that touched it:
 
 ```bash
