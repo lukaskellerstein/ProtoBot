@@ -1,0 +1,801 @@
+<title>ProtoBot Fork Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --ground:#F6F7F9;
+  --panel:#FFFFFF;
+  --sunk:#EDF0F4;
+  --ink:#171B21;
+  --ink-2:#48525F;
+  --ink-3:#79838F;
+  --rule:#D9DFE6;
+  --rule-2:#E8ECF1;
+  --up:#2C5A97;
+  --up-soft:#E4EBF5;
+  --mine:#95560F;
+  --mine-soft:#F6EAD9;
+  --work:#12705A;
+  --work-soft:#DEEEE9;
+  --stop:#A61F17;
+  --stop-soft:#F7E3E1;
+  --code-bg:#EDF0F4;
+  --shadow:0 1px 2px rgba(23,27,33,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1216;
+    --panel:#171B21;
+    --sunk:#1C222A;
+    --ink:#E4E9EF;
+    --ink-2:#A6B0BC;
+    --ink-3:#7C8794;
+    --rule:#2A313A;
+    --rule-2:#212832;
+    --up:#84ADE0;
+    --up-soft:#1B2836;
+    --mine:#DCA152;
+    --mine-soft:#2C2317;
+    --work:#4FBE9F;
+    --work-soft:#122B26;
+    --stop:#EF827A;
+    --stop-soft:#2E1A19;
+    --code-bg:#1B222B;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1216;
+  --panel:#171B21;
+  --sunk:#1C222A;
+  --ink:#E4E9EF;
+  --ink-2:#A6B0BC;
+  --ink-3:#7C8794;
+  --rule:#2A313A;
+  --rule-2:#212832;
+  --up:#84ADE0;
+  --up-soft:#1B2836;
+  --mine:#DCA152;
+  --mine-soft:#2C2317;
+  --work:#4FBE9F;
+  --work-soft:#122B26;
+  --stop:#EF827A;
+  --stop-soft:#2E1A19;
+  --code-bg:#1B222B;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1220px;margin:0 auto;padding:0 24px 96px}
+
+/* ---- header ---- */
+header.top{
+  padding:56px 0 30px;
+  border-bottom:1px solid var(--rule);
+  margin-bottom:40px;
+}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 14px;
+}
+h1{
+  font-family:"Chivo",system-ui,sans-serif;
+  font-weight:700;font-size:clamp(34px,5.2vw,52px);
+  line-height:1.04;letter-spacing:-.022em;margin:0;
+  text-wrap:balance;
+}
+.dek{
+  font-size:19px;color:var(--ink-2);max-width:62ch;margin:16px 0 0;
+}
+.legend{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:26px}
+.legend div{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:9px;
+}
+.sw{width:11px;height:11px;border-radius:2px;flex:none}
+.sw-up{background:var(--up)} .sw-mine{background:var(--mine)} .sw-work{background:var(--work)}
+.xref{margin:22px 0 0}
+.xref a{
+  font-family:"Chivo",system-ui,sans-serif;font-size:14.5px;font-weight:600;
+  color:var(--up);text-decoration:none;
+  border-bottom:1px solid var(--up-soft);padding-bottom:2px;
+}
+.xref a:hover{border-bottom-color:var(--up)}
+
+/* ---- layout ---- */
+.grid{display:block}
+@media(min-width:1040px){
+  .grid{display:grid;grid-template-columns:206px minmax(0,1fr);gap:56px;align-items:start}
+  nav.index{position:sticky;top:28px}
+}
+nav.index{margin-bottom:44px}
+nav.index p{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 12px;
+}
+nav.index ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+nav.index a{
+  font-family:"Chivo",system-ui,sans-serif;font-size:13.5px;font-weight:500;
+  color:var(--ink-2);text-decoration:none;display:block;line-height:1.32;
+  border-left:2px solid var(--rule-2);padding-left:11px;
+}
+nav.index a:hover{color:var(--ink);border-left-color:var(--up)}
+nav.index a:focus-visible{outline:2px solid var(--up);outline-offset:3px}
+
+main{min-width:0}
+section{margin-bottom:60px;scroll-margin-top:24px}
+h2{
+  font-family:"Chivo",system-ui,sans-serif;font-weight:600;
+  font-size:26px;letter-spacing:-.014em;line-height:1.18;
+  margin:0 0 6px;text-wrap:balance;
+}
+.sec-n{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;letter-spacing:.14em;color:var(--ink-3);
+  display:block;margin-bottom:9px;
+}
+h3{
+  font-family:"Chivo",system-ui,sans-serif;font-weight:600;font-size:17px;
+  letter-spacing:-.006em;margin:32px 0 8px;
+}
+p{margin:0 0 14px;max-width:68ch}
+ul,ol{margin:0 0 14px;padding-left:22px;max-width:68ch}
+li{margin-bottom:6px}
+strong{font-weight:600}
+a{color:var(--up)}
+
+code{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.855em;background:var(--code-bg);
+  padding:.12em .38em;border-radius:3px;
+  overflow-wrap:anywhere;
+}
+pre{
+  background:var(--code-bg);border:1px solid var(--rule-2);
+  border-radius:6px;padding:15px 17px;margin:0 0 16px;
+  overflow-x:auto;
+}
+pre code{background:none;padding:0;font-size:13.5px;line-height:1.66;display:block}
+.cm{color:var(--ink-3)}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--rule);border-radius:7px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:520px}
+th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+th{
+  font-family:"Chivo",system-ui,sans-serif;font-weight:600;font-size:12px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--sunk);border-bottom:1px solid var(--rule);
+}
+tr:last-child td{border-bottom:none}
+td code{font-size:12.6px}
+
+/* ---- callouts ---- */
+.note{
+  border-left:3px solid var(--rule);padding:2px 0 2px 18px;margin:0 0 20px;
+  max-width:68ch;
+}
+.note.warn{border-left-color:var(--mine)}
+.note.stop{border-left-color:var(--stop)}
+.note.ok{border-left-color:var(--work)}
+.note p{margin:0 0 8px}
+.note p:last-child{margin:0}
+.note .lab{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  display:block;margin-bottom:5px;color:var(--ink-3);
+}
+.note.warn .lab{color:var(--mine)}
+.note.stop .lab{color:var(--stop)}
+.note.ok .lab{color:var(--work)}
+
+/* ---- steps ---- */
+.steps{list-style:none;padding:0;margin:0;max-width:none;counter-reset:s}
+.steps>li{
+  counter-increment:s;position:relative;padding-left:46px;
+  padding-bottom:26px;margin:0;border-left:1px solid var(--rule);
+  margin-left:14px;
+}
+.steps>li:last-child{border-left-color:transparent;padding-bottom:0}
+.steps>li::before{
+  content:counter(s);position:absolute;left:-14px;top:0;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--panel);border:1px solid var(--rule);
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;
+  display:flex;align-items:center;justify-content:center;color:var(--ink-2);
+}
+.steps h3{margin:2px 0 8px}
+.steps .where{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;color:var(--ink-3);margin:0 0 10px;
+}
+
+/* ---- figures ---- */
+figure{margin:26px 0 30px}
+@media(min-width:1040px){figure{margin-left:-40px;margin-right:-40px}}
+figure svg{display:block;width:100%;height:auto;color:var(--ink-2)}
+figcaption{
+  font-size:13.5px;color:var(--ink-3);margin-top:12px;max-width:70ch;
+  padding-left:2px;
+}
+@media(min-width:1040px){figcaption{padding-left:40px}}
+.n-box{fill:var(--panel);stroke:var(--rule)}
+.n-up{stroke:var(--up)} .n-mine{stroke:var(--mine)} .n-work{stroke:var(--work)}
+.f-up{fill:var(--up)} .f-mine{fill:var(--mine)} .f-work{fill:var(--work)}
+.f-stop{fill:var(--stop)} .n-stop{stroke:var(--stop)}
+.bg-up{fill:var(--up-soft)} .bg-mine{fill:var(--mine-soft)} .bg-work{fill:var(--work-soft)}
+.t{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;fill:var(--ink)}
+.t-sm{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;fill:var(--ink-3)}
+.t-lab{font-family:"Chivo",system-ui,sans-serif;font-size:11.5px;fill:var(--ink-2);font-weight:500}
+.t-hd{font-family:"Chivo",system-ui,sans-serif;font-size:11px;fill:var(--ink-3);font-weight:600;letter-spacing:.1em}
+.wire{stroke:var(--ink-3);stroke-width:1.4;fill:none}
+.wire-d{stroke:var(--ink-3);stroke-width:1.3;fill:none;stroke-dasharray:5 4}
+.zone{fill:none;stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4}
+
+/* ---- pills ---- */
+.pill{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+  padding:2px 8px;border-radius:11px;white-space:nowrap;
+}
+.p-up{background:var(--up-soft);color:var(--up)}
+.p-mine{background:var(--mine-soft);color:var(--mine)}
+.p-work{background:var(--work-soft);color:var(--work)}
+.p-stop{background:var(--stop-soft);color:var(--stop)}
+
+footer{border-top:1px solid var(--rule);padding-top:22px;margin-top:12px}
+footer p{font-size:14px;color:var(--ink-3)}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="eyebrow">Working reference &middot; lukaskellerstein/ProtoBot &rarr; redhat-et/protobot</p>
+  <h1>ProtoBot Fork Manual</h1>
+  <p class="dek">How to keep three things apart: the upstream code, the changes you send back, and the notes and tooling that are only yours. Every rule below is checked against your actual repository.</p>
+  <div class="legend">
+    <div><span class="sw sw-up"></span>Upstream code &mdash; redhat-et/protobot</div>
+    <div><span class="sw sw-work"></span>Your contributions &mdash; one worktree each</div>
+    <div><span class="sw sw-mine"></span>Your private layer &mdash; never leaves the fork</div>
+  </div>
+  <p class="xref"><a href="https://claude.ai/code/artifact/c07fa0d4-d274-437b-a4e8-bc61ce693061">In a hurry? Read the cheat sheet instead &rarr;</a></p>
+</header>
+
+<div class="grid">
+
+<nav class="index" aria-label="Sections">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#idea">1. Three layers</a></li>
+    <li><a href="#state">2. Where you are now</a></li>
+    <li><a href="#rule">3. The one rule</a></li>
+    <li><a href="#loop">4. The daily loop</a></li>
+    <li><a href="#parallel">5. Several agents at once</a></li>
+    <li><a href="#private">6. Your private files</a></li>
+    <li><a href="#gaps">7. Two gaps to close</a></li>
+    <li><a href="#alt">8. What I rejected</a></li>
+    <li><a href="#sheet">9. Command sheet</a></li>
+    <li><a href="#recover">10. When it goes wrong</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ============ 1 ============ -->
+<section id="idea">
+  <span class="sec-n">01</span>
+  <h2>Three layers, and the line between them</h2>
+
+  <p>A fork is not a copy. It is a place to keep two different kinds of work in one storage box. Your job is to make sure they never touch.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Layer</th><th>Lives on</th><th>Goes to upstream?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="pill p-up">Upstream code</span></td>
+        <td><code>upstream/main</code></td>
+        <td>It is upstream. You only read it.</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-work">A contribution</span></td>
+        <td>branch <code>lukas/&lt;slug&gt;</code>, cut from <code>upstream/main</code></td>
+        <td>Yes, as one pull request.</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-mine">Your private layer</span></td>
+        <td>fork <code>main</code>, and your machine</td>
+        <td><strong>Never.</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>The picture below is the whole workflow. The top track is a contribution. The bottom track is your private layer. They share a storage box on GitHub and nothing else.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 430" role="img" aria-label="Contributions flow from upstream main through a worktree branch to your fork and back as a pull request. Your private notes live on the fork's main branch, which is a dead end and must never be used as the base for a new branch.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+        </marker>
+        <marker id="ar-up" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" class="f-up"/>
+        </marker>
+      </defs>
+
+      <!-- track labels -->
+      <text x="24" y="26" class="t-hd">THE CONTRIBUTION TRACK</text>
+      <text x="24" y="286" class="t-hd">THE PRIVATE TRACK</text>
+
+      <!-- return arrow, drawn first so boxes sit on top -->
+      <path d="M778,54 V34 H110 V50" class="wire" marker-end="url(#ar)"/>
+      <text x="444" y="28" class="t-lab" text-anchor="middle">4 &nbsp;merged upstream &mdash; then fetch and start again</text>
+
+      <!-- B1 upstream/main -->
+      <rect x="24" y="54" width="180" height="70" rx="6" class="n-box"/>
+      <rect x="24" y="54" width="4" height="70" rx="2" class="f-up" stroke="none"/>
+      <text x="44" y="82" class="t">upstream/main</text>
+      <text x="44" y="102" class="t-sm">redhat-et/protobot</text>
+      <text x="44" y="117" class="t-sm">always the base</text>
+
+      <!-- B2 worktree -->
+      <rect x="252" y="54" width="196" height="70" rx="6" class="n-box"/>
+      <rect x="252" y="54" width="4" height="70" rx="2" class="f-work" stroke="none"/>
+      <text x="272" y="82" class="t">.worktrees/&lt;slug&gt;</text>
+      <text x="272" y="102" class="t-sm">branch lukas/&lt;slug&gt;</text>
+      <text x="272" y="117" class="t-sm">one agent works here</text>
+
+      <!-- B3 fork branch -->
+      <rect x="496" y="54" width="176" height="70" rx="6" class="n-box"/>
+      <rect x="496" y="54" width="4" height="70" rx="2" class="f-work" stroke="none"/>
+      <text x="516" y="82" class="t">origin/lukas/…</text>
+      <text x="516" y="102" class="t-sm">your fork on GitHub</text>
+      <text x="516" y="117" class="t-sm">storage only</text>
+
+      <!-- B4 PR -->
+      <rect x="720" y="54" width="136" height="70" rx="6" class="n-box"/>
+      <rect x="720" y="54" width="4" height="70" rx="2" class="f-up" stroke="none"/>
+      <text x="740" y="82" class="t">Pull request</text>
+      <text x="740" y="102" class="t-sm">into upstream</text>
+      <text x="740" y="117" class="t-sm">main</text>
+
+      <!-- arrows top track -->
+      <path d="M206,89 H248" class="wire" marker-end="url(#ar)"/>
+      <text x="227" y="76" class="t-lab" text-anchor="middle">1 cut</text>
+      <path d="M450,89 H492" class="wire" marker-end="url(#ar)"/>
+      <text x="471" y="76" class="t-lab" text-anchor="middle">2 push</text>
+      <path d="M674,89 H716" class="wire" marker-end="url(#ar)"/>
+      <text x="695" y="76" class="t-lab" text-anchor="middle">3 open</text>
+
+      <!-- rebase relation -->
+      <path d="M114,126 V304" class="wire-d" marker-end="url(#ar)"/>
+      <text x="128" y="206" class="t-lab">rebase your notes</text>
+      <text x="128" y="222" class="t-lab">onto upstream/main</text>
+
+      <!-- P1 main checkout -->
+      <rect x="24" y="308" width="180" height="70" rx="6" class="n-box"/>
+      <rect x="24" y="308" width="4" height="70" rx="2" class="f-mine" stroke="none"/>
+      <text x="44" y="336" class="t">ProtoBot/</text>
+      <text x="44" y="356" class="t-sm">main checkout, on main</text>
+      <text x="44" y="371" class="t-sm">lukas/ notes live here</text>
+
+      <!-- P2 origin/main -->
+      <rect x="252" y="308" width="196" height="70" rx="6" class="n-box"/>
+      <rect x="252" y="308" width="4" height="70" rx="2" class="f-mine" stroke="none"/>
+      <text x="272" y="336" class="t">origin/main</text>
+      <text x="272" y="356" class="t-sm">your fork only</text>
+      <text x="272" y="371" class="t-sm">a deliberate dead end</text>
+
+      <path d="M206,343 H248" class="wire" marker-end="url(#ar)"/>
+      <text x="227" y="330" class="t-lab" text-anchor="middle">push</text>
+
+      <!-- the forbidden edge -->
+      <path d="M350,304 V130" class="wire-d n-stop"/>
+      <circle cx="350" cy="217" r="13" fill="var(--stop-soft)" class="n-stop"/>
+      <path d="M344,211 L356,223 M356,211 L344,223" class="n-stop" stroke-width="1.8" fill="none"/>
+      <text x="372" y="212" class="t-lab f-stop">never cut a branch</text>
+      <text x="372" y="228" class="t-lab f-stop">from origin/main</text>
+
+      <!-- zones -->
+      <rect x="10" y="40" width="860" height="98" class="zone" rx="8"/>
+      <rect x="10" y="296" width="446" height="96" class="zone" rx="8"/>
+    </svg>
+    <figcaption>The two tracks meet only in your fork's storage. A branch cut from <code>origin/main</code> would carry your 5,122 lines of notes into the pull request &mdash; that is the crossed edge in the middle.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="state">
+  <span class="sec-n">02</span>
+  <h2>Where you are now</h2>
+
+  <p>I read your repository before writing this. These are the facts it is built on.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Thing</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Remotes</td><td><code>origin</code> = your fork, <code>upstream</code> = <code>redhat-et/protobot</code>. Both correct.</td></tr>
+      <tr><td>Your access upstream</td><td><strong>Write.</strong> You could push branches straight to upstream. You do not have to.</td></tr>
+      <tr><td>Fork <code>main</code></td><td><code>upstream/main</code> plus exactly one commit, <code>af4b688 lukas-notes</code>. It adds only <code>lukas/</code>.</td></tr>
+      <tr><td>Local <code>main</code> vs upstream</td><td>9 commits behind. It needs a refresh.</td></tr>
+      <tr><td>Local <code>main</code> vs <code>origin/main</code></td><td>25 ahead, 1 behind. The next push needs <code>--force-with-lease</code>.</td></tr>
+      <tr><td>Worktrees</td><td>One, at <code>.worktrees/ears-manager</code> on branch <code>lukas/ears-manager</code>.</td></tr>
+      <tr><td>Past pull requests</td><td>Three, all from the fork. One merged, two closed. The fork route works here.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note warn">
+    <span class="lab">Loose ends in the main checkout</span>
+    <p><code>.agents/skills/review-pr/SKILL.md</code> is edited and <code>redesing-review-pr.md</code> is untracked, both sitting on <code>main</code>. Those are upstream files. If you commit them to <code>main</code> they join your private layer and can never reach upstream cleanly. Move them to a worktree branch first.</p>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="rule">
+  <span class="sec-n">03</span>
+  <h2>The one rule: cut every branch from <code>upstream/main</code></h2>
+
+  <p>This is the rule that makes the rest safe. Your fork's <code>main</code> is <em>not</em> the upstream main. It carries your notes commit on top. A branch cut from it starts life already dirty.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 250" role="img" aria-label="Two commit graphs. Cutting a branch from the fork's main includes the private notes commit, so the pull request diff contains the lukas folder. Cutting from upstream main gives a clean diff.">
+      <!-- LEFT panel -->
+      <rect x="16" y="16" width="410" height="218" rx="8" class="n-box"/>
+      <text x="38" y="46" class="t-hd f-stop">CUT FROM origin/main &mdash; WRONG</text>
+
+      <line x1="46" y1="106" x2="396" y2="106" class="wire"/>
+      <circle cx="76" cy="106" r="9" class="n-up bg-up" stroke-width="1.6"/>
+      <circle cx="132" cy="106" r="9" class="n-up bg-up" stroke-width="1.6"/>
+      <circle cx="188" cy="106" r="9" class="n-mine bg-mine" stroke-width="1.6"/>
+      <circle cx="272" cy="106" r="9" class="n-work bg-work" stroke-width="1.6"/>
+      <circle cx="340" cy="106" r="9" class="n-work bg-work" stroke-width="1.6"/>
+      <text x="188" y="88" class="t-lab f-mine" text-anchor="middle">lukas-notes</text>
+      <text x="306" y="88" class="t-lab f-work" text-anchor="middle">your work</text>
+
+      <rect x="46" y="150" width="350" height="62" rx="5" fill="var(--stop-soft)" stroke="none"/>
+      <text x="64" y="172" class="t-lab f-stop">The pull request diff contains:</text>
+      <text x="64" y="194" class="t-sm f-stop">docs/… &nbsp;+&nbsp; lukas/ &nbsp;(14 files, 5,122 lines)</text>
+
+      <!-- RIGHT panel -->
+      <rect x="454" y="16" width="410" height="218" rx="8" class="n-box"/>
+      <text x="476" y="46" class="t-hd f-work">CUT FROM upstream/main &mdash; RIGHT</text>
+
+      <line x1="484" y1="106" x2="834" y2="106" class="wire"/>
+      <circle cx="514" cy="106" r="9" class="n-up bg-up" stroke-width="1.6"/>
+      <circle cx="570" cy="106" r="9" class="n-up bg-up" stroke-width="1.6"/>
+      <circle cx="626" cy="106" r="9" class="n-up bg-up" stroke-width="1.6"/>
+      <circle cx="710" cy="106" r="9" class="n-work bg-work" stroke-width="1.6"/>
+      <circle cx="778" cy="106" r="9" class="n-work bg-work" stroke-width="1.6"/>
+      <text x="570" y="88" class="t-lab f-up" text-anchor="middle">upstream only</text>
+      <text x="744" y="88" class="t-lab f-work" text-anchor="middle">your work</text>
+
+      <rect x="484" y="150" width="350" height="62" rx="5" fill="var(--work-soft)" stroke="none"/>
+      <text x="502" y="172" class="t-lab f-work">The pull request diff contains:</text>
+      <text x="502" y="194" class="t-sm f-work">docs/… &nbsp;only</text>
+    </svg>
+    <figcaption>One commit of difference in the base changes what a reviewer sees. The amber commit is your notes; it is the only thing that separates the two graphs.</figcaption>
+  </figure>
+
+  <div class="note stop">
+    <span class="lab">This is live today</span>
+    <p>Your <code>WorktreeCreate</code> hook picks its base from <code>origin/HEAD</code>, which is <code>origin/main</code> &mdash; the dirty one. Section 7 has the fix. Until you apply it, pass the base by hand.</p>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="loop">
+  <span class="sec-n">04</span>
+  <h2>The daily loop</h2>
+
+  <p>Six steps, in order. Steps 1 and 6 run in the main checkout. Steps 2 to 5 run inside one worktree.</p>
+
+  <ol class="steps">
+
+    <li>
+      <h3>Catch up with upstream</h3>
+      <p class="where">in ProtoBot/ &mdash; start it with <code>claude --no-worktree</code></p>
+      <p>Do this every morning, and again before you cut a new branch. Your notes commit is replayed on top of the newest upstream code.</p>
+<pre><code>git fetch upstream --prune
+git rebase upstream/main
+git push --force-with-lease origin main</code></pre>
+      <p>The rebase never conflicts, because your commit touches only <code>lukas/</code> and upstream never touches that path. The force push is safe: nobody else uses your fork's <code>main</code>.</p>
+    </li>
+
+    <li>
+      <h3>Start a feature in its own worktree</h3>
+      <p class="where">from anywhere in the repo</p>
+<pre><code>claude -w lukas/&lt;slug&gt;</code></pre>
+      <p>The hook makes <code>.worktrees/lukas/&lt;slug&gt;</code> on a new branch called <code>lukas/&lt;slug&gt;</code>. After the section 7 fix it cuts from <code>upstream/main</code>. To do it by hand instead:</p>
+<pre><code>git fetch upstream
+git worktree add -b lukas/&lt;slug&gt; .worktrees/lukas/&lt;slug&gt; upstream/main</code></pre>
+      <p>The worktree is that session's whole world. It never leaves the directory, and it never switches branch.</p>
+    </li>
+
+    <li>
+      <h3>Build and test it</h3>
+      <p class="where">in .worktrees/lukas/&lt;slug&gt;</p>
+      <p>A fresh worktree has no gitignored files, so install what the build needs there. <code>AGENTS.md</code> requires every pre-commit test to pass before you commit.</p>
+<pre><code>pre-commit run --all-files</code></pre>
+    </li>
+
+    <li>
+      <h3>Push the branch and open the pull request</h3>
+      <p class="where">in the worktree</p>
+<pre><code>git push -u origin lukas/&lt;slug&gt;
+gh pr create --repo redhat-et/protobot \
+  --base main --head lukaskellerstein:lukas/&lt;slug&gt;</code></pre>
+      <p>The branch lands in <strong>your fork</strong>. The pull request is opened <strong>against upstream</strong>. The repo's <code>pull-request</code> skill does the same thing with a checklist, so <code>/pull-request</code> is the shorter route.</p>
+      <p>Before you push, prove the diff is clean:</p>
+<pre><code>git diff --name-only upstream/main... | grep -E '^(lukas/|\.claude/)' <span class="cm"># must print nothing</span></code></pre>
+    </li>
+
+    <li>
+      <h3>Answer the review, then rebase</h3>
+      <p class="where">in the worktree</p>
+      <p>Upstream moves fast, so a pull request older than a day needs a rebase. Use <code>/rebase-pr</code>, or:</p>
+<pre><code>git fetch upstream
+git rebase upstream/main
+git push --force-with-lease</code></pre>
+    </li>
+
+    <li>
+      <h3>Clean up after the merge</h3>
+      <p class="where">exit the session, then in ProtoBot/</p>
+      <p>Pick <strong>remove</strong> when the session ends. That deletes the directory and keeps the branch. Then delete the branch yourself and refresh:</p>
+<pre><code>git branch -D lukas/&lt;slug&gt;
+git push origin --delete lukas/&lt;slug&gt;
+git fetch upstream --prune
+git rebase upstream/main
+git push --force-with-lease origin main</code></pre>
+    </li>
+  </ol>
+
+  <div class="note">
+    <span class="lab">Note on subagent worktrees</span>
+    <p>A subagent worktree at <code>.worktrees/agent-&lt;hex&gt;</code> is created but never removed automatically. Prune those by hand with <code>git worktree list</code> and <code>git worktree remove</code>.</p>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="parallel">
+  <span class="sec-n">05</span>
+  <h2>Several agents at once</h2>
+
+  <p>One worktree, one branch, one agent session. That is the unit. There is no limit beyond disk space, and git refuses to check out the same branch in two places, so the sessions cannot collide on a branch.</p>
+
+  <p>I checked what worktrees share in your repository. This matters, because it decides where you configure things.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Shared by every worktree</th><th>Private to each worktree</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>.git/info/exclude</code> &mdash; one edit covers all of them</td>
+        <td>The working files themselves</td>
+      </tr>
+      <tr>
+        <td><code>.git/hooks/</code> &mdash; run <code>pre-commit install</code> once</td>
+        <td>Gitignored files: build output, caches, <code>.env</code></td>
+      </tr>
+      <tr>
+        <td>All commits, branches and remotes</td>
+        <td>The checked-out branch and its index</td>
+      </tr>
+      <tr>
+        <td>A <code>git fetch</code> in one updates all of them</td>
+        <td>Any running process, and its port</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Two practical rules for parallel work:</p>
+  <ul>
+    <li><strong>Give each running app its own port.</strong> Two worktrees that start the same server fight over one port. Pick a free one and say which.</li>
+    <li><strong>Re-read a file before you edit it.</strong> Two sessions can share one worktree. The other session's edits arrive as changed files on disk.</li>
+  </ul>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="private">
+  <span class="sec-n">06</span>
+  <h2>Your private files, and how each one travels</h2>
+
+  <p>You have three kinds of private thing, and they need three different homes. Getting this wrong is what causes a leak.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>What</th><th>Home</th><th>How it reaches a worktree</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>lukas/</code> notes</td>
+        <td>Committed on fork <code>main</code></td>
+        <td>It does not. Read it at its path in the main checkout.</td>
+      </tr>
+      <tr>
+        <td><code>.claude/settings.json</code>, <code>.claude/hooks/</code>, <code>.claude/rules/</code></td>
+        <td>Not committed. The source of truth is <code>mac-setup/projects/templates/claude/</code>.</td>
+        <td>Copied in by the <code>WorktreeCreate</code> hook, listed in <code>.worktreeinclude</code>.</td>
+      </tr>
+      <tr>
+        <td>Personal skills</td>
+        <td><code>~/.claude/skills/</code>, already backed up in mac-setup</td>
+        <td>They are global. Every session sees them.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note stop">
+    <span class="lab">Do not put a personal skill in this repo</span>
+    <p><code>.claude/skills</code> is a symlink to <code>.agents/skills</code>, and that directory belongs to upstream. Anything you drop there is tracked and will show up in a pull request. Put personal skills in <code>~/.claude/skills/</code> instead.</p>
+  </div>
+
+  <h3>Why the notes are committed but the tooling is not</h3>
+  <p>The notes are about ProtoBot. They are worth backing up with the project, and nothing else on your machine produces them. The hooks and settings are machine-level templates that mac-setup delivers to every repository. Committing them here would create a second copy that drifts from the original.</p>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="gaps">
+  <span class="sec-n">07</span>
+  <h2>Two gaps to close</h2>
+
+  <p>Both are real today. Neither takes long.</p>
+
+  <h3>Gap 1 &mdash; new worktrees branch from the wrong place</h3>
+  <p><code>.claude/hooks/worktree-create.sh</code> chooses its base from <code>origin/HEAD</code>. In a fork that is the dirty main. Fix it in the mac-setup template, then redeliver it here, so every forked repo on your machine gets the same behaviour.</p>
+<pre><code><span class="cm"># prefer the upstream remote when there is one</span>
+base=$(git -C "$root" symbolic-ref -q --short refs/remotes/upstream/HEAD 2>/dev/null || true)
+[ -n "$base" ] || base=$(git -C "$root" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null || true)
+
+<span class="cm"># fetch from whichever remote the base names</span>
+remote=${base%%/*}
+branch=${base#*/}
+git -C "$root" fetch -q "$remote" "$branch"</code></pre>
+  <p>The repository already has <code>refs/remotes/upstream/HEAD</code>, so this works right away. In a repo with no <code>upstream</code> remote nothing changes.</p>
+
+  <h3>Gap 2 &mdash; worktree sessions run with no Claude config</h3>
+  <p><code>.worktrees/ears-manager/.claude/</code> holds only the <code>skills</code> symlink. There is no <code>settings.json</code> there, so inside a worktree session the worktree guard does not run, the sandbox setting does not apply, and the worktree hooks are not registered. The create hook already supports a fix; the file it looks for is simply missing.</p>
+  <p>Create <code>.worktreeinclude</code> in the repo root:</p>
+<pre><code>.claude/settings.json
+.claude/hooks/*
+.claude/rules/*</code></pre>
+  <p>Then add the same paths to <code>.git/info/exclude</code>, so the copies never show up as untracked files in a feature branch:</p>
+<pre><code>/.claude/settings.json
+/.claude/settings.local.json
+/.claude/hooks/
+/.claude/rules/
+/.worktreeinclude</code></pre>
+  <div class="note ok">
+    <span class="lab">Why info/exclude and not .gitignore</span>
+    <p><code>.gitignore</code> is tracked by upstream, so an entry there becomes a pull request. <code>.git/info/exclude</code> is local and, as I confirmed in your repo, shared by every worktree. One edit, every branch, nothing to send upstream.</p>
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="alt">
+  <span class="sec-n">08</span>
+  <h2>What I rejected, and why</h2>
+
+  <p>Two other designs are reasonable. I checked both against your repository and stayed with the plan above.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Alternative</th><th>What it gives</th><th>Why not</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Push feature branches straight to <code>upstream</code>, since you have write access</td>
+        <td>No cross-repo pull requests. Maintainers can push fixes to your branch.</td>
+        <td>Nothing is lost by using the fork. I read the workflows: the CI job needs only <code>contents: read</code>, and the CodeRabbit job fires only for the <code>fullsend-ai-coder</code> bot. Your fork pull request #53 already merged. Keep upstream free of your branches.</td>
+      </tr>
+      <tr>
+        <td>Keep fork <code>main</code> an exact mirror, and put notes on a branch called <code>lukas/base</code></td>
+        <td>No force push. <code>origin/main</code> becomes safe to branch from.</td>
+        <td>Once the hook cuts from <code>upstream/main</code>, the leak is gone anyway. Keeping the notes on <code>main</code> is what you asked for, and it costs one <code>--force-with-lease</code> a day.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note ok">
+    <span class="lab">Keep the notes as few commits</span>
+    <p>One commit that touches only <code>lukas/</code> makes the daily rebase a no-op. If you add notes, amend that commit or add another one that also touches only <code>lukas/</code>. The moment a private commit touches an upstream file, your rebases start conflicting.</p>
+  </div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="sheet">
+  <span class="sec-n">09</span>
+  <h2>Command sheet</h2>
+
+<pre><code><span class="cm"># --- catch up (main checkout, claude --no-worktree) ---</span>
+git fetch upstream --prune
+git rebase upstream/main
+git push --force-with-lease origin main
+
+<span class="cm"># --- start a feature ---</span>
+claude -w lukas/&lt;slug&gt;
+<span class="cm"># or by hand:</span>
+git worktree add -b lukas/&lt;slug&gt; .worktrees/lukas/&lt;slug&gt; upstream/main
+
+<span class="cm"># --- check the diff is clean, then ship (in the worktree) ---</span>
+git diff --name-only upstream/main... | grep -E '^(lukas/|\.claude/)'
+pre-commit run --all-files
+git push -u origin lukas/&lt;slug&gt;
+gh pr create --repo redhat-et/protobot --base main \
+  --head lukaskellerstein:lukas/&lt;slug&gt;
+
+<span class="cm"># --- refresh a live pull request ---</span>
+git fetch upstream &amp;&amp; git rebase upstream/main &amp;&amp; git push --force-with-lease
+
+<span class="cm"># --- after the merge (main checkout) ---</span>
+git branch -D lukas/&lt;slug&gt;
+git push origin --delete lukas/&lt;slug&gt;
+
+<span class="cm"># --- see the state of everything ---</span>
+git worktree list
+git branch -vv --all
+git log --oneline upstream/main..main   <span class="cm"># your private layer, should be tiny</span></code></pre>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="recover">
+  <span class="sec-n">10</span>
+  <h2>When it goes wrong</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>A pull request diff shows <code>lukas/</code></td>
+        <td>The branch was cut from the wrong base. Rebase it onto the right one: <code>git rebase --onto upstream/main main lukas/&lt;slug&gt;</code>, then force-push.</td>
+      </tr>
+      <tr>
+        <td><code>git rebase upstream/main</code> conflicts on <code>main</code></td>
+        <td>A private commit touched an upstream file. Find it with <code>git log --stat upstream/main..main</code> and split that change out into a real feature branch.</td>
+      </tr>
+      <tr>
+        <td><code>--force-with-lease</code> is refused</td>
+        <td>Something else moved <code>origin/main</code>. Run <code>git fetch origin</code> and look before you push again. Never fall back to a plain <code>--force</code>.</td>
+      </tr>
+      <tr>
+        <td>The worktree guard says you are in the main checkout</td>
+        <td>You started without <code>-w</code>. Either restart with <code>claude -w &lt;name&gt;</code> for a branch, or with <code>claude --no-worktree</code> to work on <code>main</code> on purpose.</td>
+      </tr>
+      <tr>
+        <td><code>git worktree remove</code> refuses</td>
+        <td>Another session holds the lock. Close that session first. Do not delete the directory by hand.</td>
+      </tr>
+      <tr>
+        <td>Your fork's <code>main</code> looks far ahead of upstream on GitHub</td>
+        <td>That is normal and expected. It is your notes commit plus commits upstream has since taken. Do not use the "Sync fork" button; it fights the rebase.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<footer>
+  <p>Written against the repository state on 9 September 2026. Branch facts, remote names and worktree behaviour were read from the working copy, not assumed.</p>
+</footer>
+
+</main>
+</div>
+</div>
