@@ -52,11 +52,12 @@ upstream commit, so the private commits ride along.
 
 ```bash
 git rebase upstream/main
-pre-commit run --all-files
+SKIP=skillsaw uvx pre-commit run --all-files
 ```
 
 Resolve conflicts, then run pre-commit again. Run the project's tests if the
-change has any. Nothing goes out red. After the rebase,
+change has any. Nothing goes out red. `skillsaw` is skipped: it fails on
+the linked skills in a worktree, and CI runs it on the real tree. After the rebase,
 `git merge-base --is-ancestor upstream/main HEAD` must succeed.
 
 ## 3. Push once

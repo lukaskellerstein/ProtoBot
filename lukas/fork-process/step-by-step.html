@@ -1,0 +1,1019 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProtoBot Step by Step</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  color-scheme:light;
+  --ground:#F6F7F9;
+  --panel:#FFFFFF;
+  --sunk:#EDF0F4;
+  --ink:#171B21;
+  --ink-2:#48525F;
+  --ink-3:#79838F;
+  --rule:#D9DFE6;
+  --rule-2:#E8ECF1;
+  --up:#2C5A97;
+  --up-soft:#E4EBF5;
+  --mine:#95560F;
+  --mine-soft:#F6EAD9;
+  --work:#12705A;
+  --work-soft:#DEEEE9;
+  --stop:#A61F17;
+  --stop-soft:#F7E3E1;
+  --code-bg:#EDF0F4;
+  --shadow:0 1px 2px rgba(23,27,33,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#0F1216; --panel:#171B21; --sunk:#1C222A;
+    --ink:#E4E9EF; --ink-2:#A6B0BC; --ink-3:#7C8794;
+    --rule:#2A313A; --rule-2:#212832;
+    --up:#84ADE0; --up-soft:#1B2836;
+    --mine:#DCA152; --mine-soft:#2C2317;
+    --work:#4FBE9F; --work-soft:#122B26;
+    --stop:#EF827A; --stop-soft:#2E1A19;
+    --code-bg:#1B222B;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#0F1216; --panel:#171B21; --sunk:#1C222A;
+  --ink:#E4E9EF; --ink-2:#A6B0BC; --ink-3:#7C8794;
+  --rule:#2A313A; --rule-2:#212832;
+  --up:#84ADE0; --up-soft:#1B2836;
+  --mine:#DCA152; --mine-soft:#2C2317;
+  --work:#4FBE9F; --work-soft:#122B26;
+  --stop:#EF827A; --stop-soft:#2E1A19;
+  --code-bg:#1B222B;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1220px;margin:0 auto;padding:0 24px 96px}
+
+/* ---- header ---- */
+header.top{padding:56px 0 30px;border-bottom:1px solid var(--rule);margin-bottom:40px}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 14px;
+}
+h1{
+  font-family:"Chivo",system-ui,sans-serif;
+  font-weight:700;font-size:clamp(34px,5.2vw,52px);
+  line-height:1.04;letter-spacing:-.022em;margin:0;text-wrap:balance;
+}
+.dek{font-size:19px;color:var(--ink-2);max-width:62ch;margin:16px 0 0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:26px}
+.legend div{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:9px;
+}
+.sw{width:11px;height:11px;border-radius:2px;flex:none}
+.sw-up{background:var(--up)} .sw-mine{background:var(--mine)} .sw-work{background:var(--work)} .sw-stop{background:var(--stop)}
+.xref{margin:22px 0 0;font-family:"Chivo",system-ui,sans-serif;font-size:14.5px;color:var(--ink-3)}
+.xref a{
+  font-weight:600;color:var(--up);text-decoration:none;
+  border-bottom:1px solid var(--up-soft);padding-bottom:2px;
+}
+.xref a:hover{border-bottom-color:var(--up)}
+
+/* ---- layout ---- */
+.grid{display:block}
+@media(min-width:1040px){
+  .grid{display:grid;grid-template-columns:216px minmax(0,1fr);gap:56px;align-items:start}
+  nav.index{position:sticky;top:28px}
+}
+nav.index{margin-bottom:44px}
+nav.index p{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 12px;
+}
+nav.index ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+nav.index a{
+  font-family:"Chivo",system-ui,sans-serif;font-size:13.5px;font-weight:500;
+  color:var(--ink-2);text-decoration:none;display:block;line-height:1.32;
+  border-left:2px solid var(--rule-2);padding-left:11px;
+}
+nav.index a:hover{color:var(--ink);border-left-color:var(--up)}
+nav.index a:focus-visible{outline:2px solid var(--up);outline-offset:3px}
+
+main{min-width:0}
+section{margin-bottom:64px;scroll-margin-top:24px}
+h2{
+  font-family:"Chivo",system-ui,sans-serif;font-weight:600;
+  font-size:26px;letter-spacing:-.014em;line-height:1.18;
+  margin:0 0 6px;text-wrap:balance;
+}
+.sec-n{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;letter-spacing:.14em;color:var(--ink-3);
+  display:block;margin-bottom:9px;
+}
+h3{
+  font-family:"Chivo",system-ui,sans-serif;font-weight:600;font-size:17px;
+  letter-spacing:-.006em;margin:32px 0 8px;
+}
+p{margin:0 0 14px;max-width:68ch}
+ul,ol{margin:0 0 14px;padding-left:22px;max-width:68ch}
+li{margin-bottom:6px}
+strong{font-weight:600}
+a{color:var(--up)}
+
+code{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.855em;background:var(--code-bg);
+  padding:.12em .38em;border-radius:3px;overflow-wrap:anywhere;
+}
+pre{
+  background:var(--code-bg);border:1px solid var(--rule-2);
+  border-radius:6px;padding:15px 17px;margin:0 0 16px;overflow-x:auto;
+}
+pre code{background:none;padding:0;font-size:13.5px;line-height:1.66;display:block}
+.cm{color:var(--ink-3)}
+
+/* ---- session line ---- */
+.session{
+  display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;
+  color:var(--ink-2);margin:10px 0 22px;padding:10px 14px;
+  background:var(--panel);border:1px solid var(--rule);border-radius:7px;
+}
+.session b{font-family:"Chivo",system-ui,sans-serif;font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--rule);border-radius:7px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:520px}
+th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+th{
+  font-family:"Chivo",system-ui,sans-serif;font-weight:600;font-size:12px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--sunk);border-bottom:1px solid var(--rule);
+}
+tr:last-child td{border-bottom:none}
+td code{font-size:12.6px}
+
+/* ---- callouts ---- */
+.note{border-left:3px solid var(--rule);padding:2px 0 2px 18px;margin:0 0 20px;max-width:68ch}
+.note.warn{border-left-color:var(--mine)}
+.note.stop{border-left-color:var(--stop)}
+.note.ok{border-left-color:var(--work)}
+.note p{margin:0 0 8px}
+.note p:last-child{margin:0}
+.note .lab{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  display:block;margin-bottom:5px;color:var(--ink-3);
+}
+.note.warn .lab{color:var(--mine)}
+.note.stop .lab{color:var(--stop)}
+.note.ok .lab{color:var(--work)}
+
+/* ---- steps ---- */
+.steps{list-style:none;padding:0;margin:0;max-width:none;counter-reset:s}
+.steps>li{
+  counter-increment:s;position:relative;padding-left:46px;
+  padding-bottom:26px;margin:0;border-left:1px solid var(--rule);margin-left:14px;
+}
+.steps>li:last-child{border-left-color:transparent;padding-bottom:0}
+.steps>li::before{
+  content:counter(s);position:absolute;left:-14px;top:0;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--panel);border:1px solid var(--rule);
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;
+  display:flex;align-items:center;justify-content:center;color:var(--ink-2);
+}
+.steps h3{margin:2px 0 8px}
+.steps .where{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;color:var(--ink-3);margin:0 0 10px;
+}
+.stop-here{
+  display:inline-block;font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;padding:2px 9px;border-radius:11px;
+  background:var(--stop-soft);color:var(--stop);margin-left:6px;vertical-align:middle;
+}
+
+/* ---- figures ---- */
+figure{margin:26px 0 30px}
+@media(min-width:1040px){figure{margin-left:-40px;margin-right:-40px}}
+figure svg{display:block;width:100%;height:auto;max-width:100%;color:var(--ink-2)}
+figcaption{font-size:13.5px;color:var(--ink-3);margin-top:12px;max-width:70ch;padding-left:2px}
+@media(min-width:1040px){figcaption{padding-left:40px}}
+.n-box{fill:var(--panel);stroke:var(--rule)}
+.n-up{stroke:var(--up)} .n-mine{stroke:var(--mine)} .n-work{stroke:var(--work)} .n-stop{stroke:var(--stop)}
+.f-up{fill:var(--up)} .f-mine{fill:var(--mine)} .f-work{fill:var(--work)} .f-stop{fill:var(--stop)}
+.bg-up{fill:var(--up-soft)} .bg-mine{fill:var(--mine-soft)} .bg-work{fill:var(--work-soft)} .bg-stop{fill:var(--stop-soft)}
+.t{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;fill:var(--ink)}
+.t-sm{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;fill:var(--ink-3)}
+.t-lab{font-family:"Chivo",system-ui,sans-serif;font-size:11.5px;fill:var(--ink-2);font-weight:500}
+.t-hd{font-family:"Chivo",system-ui,sans-serif;font-size:11px;fill:var(--ink-3);font-weight:600;letter-spacing:.1em}
+.wire{stroke:var(--ink-3);stroke-width:1.4;fill:none}
+.wire-d{stroke:var(--ink-3);stroke-width:1.3;fill:none;stroke-dasharray:5 4}
+.zone{fill:none;stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4}
+
+/* ---- pills ---- */
+.pill{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;padding:2px 8px;border-radius:11px;white-space:nowrap}
+.p-up{background:var(--up-soft);color:var(--up)}
+.p-mine{background:var(--mine-soft);color:var(--mine)}
+.p-work{background:var(--work-soft);color:var(--work)}
+.p-stop{background:var(--stop-soft);color:var(--stop)}
+
+footer{border-top:1px solid var(--rule);padding-top:22px;margin-top:12px}
+footer p{font-size:14px;color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <p class="eyebrow">Working reference &middot; lukaskellerstein/ProtoBot &rarr; redhat-et/protobot &middot; 10 September 2026</p>
+  <h1>ProtoBot Step by Step</h1>
+  <p class="dek">Six situations you will meet. For each one: which session to start, what to type, which skill to call, and where it stops and waits for you.</p>
+  <div class="legend">
+    <div><span class="sw sw-up"></span>Main checkout &mdash; <code>claude --no-worktree</code></div>
+    <div><span class="sw sw-work"></span>Worktree &mdash; <code>claude -w lukas/&lt;n&gt;-&lt;slug&gt;</code> or <code>claude -w pr/&lt;N&gt;</code></div>
+    <div><span class="sw sw-mine"></span>GitHub &mdash; the PR, the bots, the merge</div>
+    <div><span class="sw sw-stop"></span>A stop &mdash; the skill waits for your yes</div>
+  </div>
+  <p class="xref">Background reading:
+    <a href="fork-manual.html">Fork Manual</a> &middot;
+    <a href="fork-cheatsheet.html">Fork Cheat Sheet</a> &middot;
+    <a href="../fullsend-setup/01-plain-protobot-robot-crew.html">Robot Crew</a> &middot;
+    <a href="../fullsend-setup/02-detailed-protobot-agent-pipeline.html">Agent Pipeline</a>
+  </p>
+</header>
+
+<div class="grid">
+
+<nav class="index" aria-label="Sections">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#before">0. Before you start</a></li>
+    <li><a href="#s1">1. Start work on an issue</a></li>
+    <li><a href="#s2">2. Open the pull request</a></li>
+    <li><a href="#s3">3. Answer the review</a></li>
+    <li><a href="#s4">4. Merge</a></li>
+    <li><a href="#s5">5. Review a colleague's PR</a></li>
+    <li><a href="#s6">6. Rebase your PR</a></li>
+    <li><a href="#rules">7. Rules that apply everywhere</a></li>
+    <li><a href="#wrong">8. When it goes wrong</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ============ 0 ============ -->
+<section id="before">
+  <span class="sec-n">00</span>
+  <h2>Before you start</h2>
+
+  <p>You work in three places. Each one has its own job, and each one is opened in its own way. The first line of every Claude session, the <em>Worktree guard</em> line, tells you which place you are in. Read it.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Place</th><th>How you open it</th><th>What you do there</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="pill p-up">Main checkout</span><br><code>ProtoBot/</code> on <code>main</code></td>
+        <td><code>claude --no-worktree</code>, run in <code>ProtoBot/</code></td>
+        <td>Catch up the fork, review other people's PRs, clean up. Your notes in <code>lukas/</code> live here.</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-work">Worktree</span><br><code>.worktrees/lukas/&lt;n&gt;-&lt;slug&gt;</code></td>
+        <td><code>claude -w lukas/&lt;n&gt;-&lt;slug&gt;</code>, run anywhere in the repo</td>
+        <td>Build the change, open the PR, answer the review, rebase. One issue, one worktree, one branch.</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-work">Review worktree</span><br><code>.worktrees/pr/&lt;N&gt;</code></td>
+        <td><code>claude -w pr/&lt;N&gt;</code>, run anywhere in the repo</td>
+        <td>Review pull request N. The hook checks out its head. One PR, one worktree. Never commit or push there.</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-mine">GitHub</span><br><code>redhat-et/protobot</code></td>
+        <td>The browser, or <code>gh</code></td>
+        <td>The PR lives here. The bots run here. The merge happens here.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Which skill, where</h3>
+  <p>Eight private skills live on the fork's <code>main</code>. A worktree sees six of them, as links to the main checkout. Two run only in the main checkout.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Skill</th><th>Runs in</th><th>Does</th><th>Commits or pushes?</th></tr></thead>
+    <tbody>
+      <tr><td><code>/sync-fork</code></td><td><span class="pill p-up">main checkout</span></td><td>Rebases fork <code>main</code> on <code>upstream/main</code>, pushes with a lease, lists worktrees that are behind</td><td>Rewrites and pushes <code>main</code></td></tr>
+      <tr><td><code>/pr-create</code></td><td><span class="pill p-work">worktree</span></td><td>Checks the branch, rebases, runs pre-commit, pushes once, opens the PR, waits for CI</td><td>Pushes. Never commits</td></tr>
+      <tr><td><code>/pr-update N</code></td><td><span class="pill p-work">worktree</span></td><td>Reads every comment on your PR, writes a report, then fixes, replies, resolves and pushes once</td><td>One commit and one push, on your yes</td></tr>
+      <tr><td><code>/pr-review N</code></td><td><span class="pill p-work">review worktree</span> <code>pr/&lt;N&gt;</code></td><td>Reviews someone else's PR from its checked-out head, writes a report, posts one review, drives the fix bot, approves</td><td>Posts to GitHub. Never commits or pushes</td></tr>
+      <tr><td><code>/prune</code></td><td><span class="pill p-up">main checkout</span></td><td>Removes worktrees and branches whose PR is merged or closed</td><td>Deletes, on your yes</td></tr>
+      <tr><td><code>/adr</code></td><td><span class="pill p-work">worktree</span></td><td>Writes a decision record in <code>docs/decisions/</code> in the house format</td><td>Writes files only</td></tr>
+      <tr><td><code>/spec-doc &lt;path&gt;</code></td><td>both</td><td>The <code>AGENTS.md</code> coverage check for any file under <code>docs/</code></td><td>Edits the document in write mode</td></tr>
+      <tr><td><code>/fullsend</code></td><td>both</td><td>The reference: what wakes each bot, the labels, the caps, the <code>gh</code> commands</td><td>Nothing</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note stop">
+    <span class="lab">Three skills you do not use</span>
+    <p><code>pull-request</code>, <code>rebase-pr</code> and <code>review-pr</code> are upstream's. They describe the maintainer's own flow: a draft PR, CodeRabbit replies, auto-merge. Since 10 September 2026 <code>skillOverrides</code> in <code>.claude/settings.json</code> hides all three, so no session lists them, in the main checkout or in a worktree. The files stay in the repo, untouched: a private commit that deletes them conflicts on every upstream edit, and a worktree is cut from <code>upstream/main</code> and would get them back anyway. The private skills above replace them.</p>
+  </div>
+
+  <h3>One-time setup</h3>
+  <p>Check these once. Every skill that talks to GitHub needs the first one.</p>
+<pre><code>gh auth status                 <span class="cm"># must say "Logged in". If not: gh auth login -h github.com</span>
+git remote -v                  <span class="cm"># origin = lukaskellerstein/ProtoBot, upstream = redhat-et/protobot</span>
+uvx pre-commit run --all-files <span class="cm"># once, to warm the cache. No install, no git hook</span></code></pre>
+  <p><code>uvx</code> runs pre-commit on demand. The skills and every code block on this page call it that way. Do not run <code>pre-commit install</code>: a git hook would block every commit on <code>skillsaw</code>, see step 4 of <a href="#s1">section 1</a>.</p>
+
+  <div class="note warn">
+    <span class="lab">Checked on 10 September 2026</span>
+    <p><code>gh auth status</code> said <em>the token in keyring is invalid</em>. Run <code>gh auth login -h github.com</code> before the next <code>/pr-create</code>, <code>/pr-update</code> or <code>/pr-review</code>. <code>pre-commit</code> is not on the PATH and no git hook is installed. That is fine: <code>uvx pre-commit</code> is the way, and it works.</p>
+  </div>
+
+  <h3>The map</h3>
+  <figure>
+    <svg viewBox="0 0 880 360" role="img" aria-label="Your pull request goes from a worktree, through pr-create, into a loop of pr-update and bot review, then merge and clean-up. A rebase is a push, so it costs one bot review run. A colleague's pull request goes through pr-review and the fix bot in a loop, then an approval, then the same merge.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+        </marker>
+      </defs>
+
+      <text x="20" y="22" class="t-hd">YOUR PULL REQUEST</text>
+      <text x="20" y="246" class="t-hd">A COLLEAGUE'S PULL REQUEST</text>
+
+      <!-- track A boxes -->
+      <rect x="20" y="36" width="140" height="56" rx="6" class="n-box"/>
+      <rect x="20" y="36" width="4" height="56" rx="2" class="f-work" stroke="none"/>
+      <text x="38" y="59" class="t">1 Start</text>
+      <text x="38" y="78" class="t-sm">claude -w lukas/…</text>
+
+      <rect x="190" y="36" width="140" height="56" rx="6" class="n-box"/>
+      <rect x="190" y="36" width="4" height="56" rx="2" class="f-work" stroke="none"/>
+      <text x="208" y="59" class="t">2 Open PR</text>
+      <text x="208" y="78" class="t-sm">/pr-create</text>
+
+      <rect x="360" y="36" width="150" height="56" rx="6" class="n-box"/>
+      <rect x="360" y="36" width="4" height="56" rx="2" class="f-work" stroke="none"/>
+      <text x="378" y="59" class="t">3 Answer</text>
+      <text x="378" y="78" class="t-sm">/pr-update N</text>
+
+      <rect x="560" y="36" width="130" height="56" rx="6" class="n-box"/>
+      <rect x="560" y="36" width="4" height="56" rx="2" class="f-mine" stroke="none"/>
+      <text x="578" y="59" class="t">4 Merge</text>
+      <text x="578" y="78" class="t-sm">GitHub, 1 approval</text>
+
+      <rect x="720" y="36" width="140" height="56" rx="6" class="n-box"/>
+      <rect x="720" y="36" width="4" height="56" rx="2" class="f-up" stroke="none"/>
+      <text x="738" y="59" class="t">Clean up</text>
+      <text x="738" y="78" class="t-sm">/prune, /sync-fork</text>
+
+      <!-- track A arrows -->
+      <path d="M160,64 H186" class="wire" marker-end="url(#ar)"/>
+      <path d="M330,64 H356" class="wire" marker-end="url(#ar)"/>
+      <path d="M510,64 H556" class="wire" marker-end="url(#ar)"/>
+      <path d="M690,64 H716" class="wire" marker-end="url(#ar)"/>
+
+      <!-- bot -->
+      <rect x="360" y="150" width="150" height="50" rx="6" class="n-box n-mine"/>
+      <text x="378" y="171" class="t">review bot</text>
+      <text x="378" y="189" class="t-sm">one run per push</text>
+
+      <!-- rebase -->
+      <rect x="20" y="150" width="140" height="50" rx="6" class="n-box"/>
+      <rect x="20" y="150" width="4" height="50" rx="2" class="f-work" stroke="none"/>
+      <text x="38" y="171" class="t">6 Rebase</text>
+      <text x="38" y="189" class="t-sm">in the worktree</text>
+
+      <!-- open PR -> bot -->
+      <path d="M260,92 V175 H356" class="wire-d" marker-end="url(#ar)"/>
+      <text x="268" y="140" class="t-lab">PR opened</text>
+      <!-- rebase -> bot -->
+      <path d="M160,190 H356" class="wire-d" marker-end="url(#ar)"/>
+      <text x="196" y="210" class="t-lab">a push is a review run</text>
+      <!-- loop answer <-> bot -->
+      <path d="M400,92 V146" class="wire" marker-end="url(#ar)"/>
+      <text x="316" y="124" class="t-lab" text-anchor="end">push once</text>
+      <path d="M470,150 V96" class="wire" marker-end="url(#ar)"/>
+      <text x="480" y="124" class="t-lab">review lands, 30–45 min</text>
+
+      <!-- track B boxes -->
+      <rect x="20" y="260" width="180" height="56" rx="6" class="n-box"/>
+      <rect x="20" y="260" width="4" height="56" rx="2" class="f-work" stroke="none"/>
+      <text x="38" y="283" class="t">5 Review</text>
+      <text x="38" y="302" class="t-sm">/pr-review N, in .worktrees/pr/N</text>
+
+      <rect x="240" y="260" width="140" height="56" rx="6" class="n-box n-mine"/>
+      <text x="258" y="283" class="t">fix bot</text>
+      <text x="258" y="302" class="t-sm">/fs-fix, same repo only</text>
+
+      <rect x="420" y="260" width="120" height="56" rx="6" class="n-box"/>
+      <rect x="420" y="260" width="4" height="56" rx="2" class="f-up" stroke="none"/>
+      <text x="438" y="283" class="t">Approve</text>
+      <text x="438" y="302" class="t-sm">"approve PR N"</text>
+
+      <!-- track B arrows -->
+      <path d="M200,288 H236" class="wire" marker-end="url(#ar)"/>
+      <path d="M310,316 V336 H110 V320" class="wire" marker-end="url(#ar)"/>
+      <text x="210" y="350" class="t-lab" text-anchor="middle">next round: /pr-review N again</text>
+      <path d="M380,288 H416" class="wire" marker-end="url(#ar)"/>
+      <path d="M540,288 H625 V96" class="wire" marker-end="url(#ar)"/>
+      <text x="634" y="200" class="t-lab">then 4 Merge</text>
+
+      <rect x="8" y="8" width="864" height="220" class="zone" rx="8"/>
+      <rect x="8" y="234" width="560" height="120" class="zone" rx="8"/>
+    </svg>
+    <figcaption>Every arrow into the review bot is a push, and every push is one bot run: 30 to 45 minutes and 3 to 8 dollars. The rules below are built to keep that number small.</figcaption>
+  </figure>
+
+  <h3>Quick index</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>I want to</th><th>Go to</th><th>Session</th><th>Type</th></tr></thead>
+    <tbody>
+      <tr><td>Start work on an issue</td><td><a href="#s1">1</a></td><td><span class="pill p-work">worktree</span></td><td><code>claude -w lukas/&lt;n&gt;-&lt;slug&gt;</code></td></tr>
+      <tr><td>Open a pull request</td><td><a href="#s2">2</a></td><td><span class="pill p-work">worktree</span></td><td><code>/pr-create</code></td></tr>
+      <tr><td>Answer comments on my PR</td><td><a href="#s3">3</a></td><td><span class="pill p-work">worktree</span></td><td><code>/pr-update N</code></td></tr>
+      <tr><td>Merge a PR</td><td><a href="#s4">4</a></td><td><span class="pill p-mine">GitHub</span></td><td>Click <em>Merge when ready</em></td></tr>
+      <tr><td>Clean up after a merge</td><td><a href="#s4">4</a></td><td><span class="pill p-up">main checkout</span></td><td><code>/prune</code>, then <code>/sync-fork</code></td></tr>
+      <tr><td>Review a colleague's PR</td><td><a href="#s5">5</a></td><td><span class="pill p-work">review worktree</span></td><td><code>claude -w pr/&lt;N&gt;</code>, then <code>/pr-review N</code></td></tr>
+      <tr><td>Rebase my PR on upstream</td><td><a href="#s6">6</a></td><td><span class="pill p-work">worktree</span></td><td>By hand, or <code>/pr-update N</code></td></tr>
+      <tr><td>Catch up the fork's <code>main</code></td><td><a href="#s6">6</a></td><td><span class="pill p-up">main checkout</span></td><td><code>/sync-fork</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="s1">
+  <span class="sec-n">01</span>
+  <h2>Start work on an issue</h2>
+  <div class="session"><b>Session</b> <span>a terminal in <code>ProtoBot/</code>, then <code>claude -w lukas/&lt;n&gt;-&lt;slug&gt;</code></span></div>
+
+  <ol class="steps">
+
+    <li>
+      <h3>Catch up the fork first</h3>
+      <p class="where">in ProtoBot/ &mdash; claude --no-worktree &mdash; optional, two minutes</p>
+      <p>Type <code>/sync-fork</code>. It fetches, checks that every private commit touches only private paths, rebases fork <code>main</code> on <code>upstream/main</code>, pushes with a lease, and lists worktrees that are behind. By hand:</p>
+<pre><code>git fetch upstream --prune
+git rebase upstream/main
+git push --force-with-lease origin main</code></pre>
+      <p>The worktree hook fetches <code>upstream/main</code> on its own, so the new branch is fresh even without this step. This step keeps fork <code>main</code> and your notes current. Skip it when you are in a hurry.</p>
+    </li>
+
+    <li>
+      <h3>Name the branch</h3>
+      <p>The name is <code>lukas/&lt;issue number&gt;-&lt;short slug&gt;</code>, lowercase, words joined with dashes. The live example is <code>lukas/34-git-integration</code>. The name is the branch, the worktree directory and the PR head, all at once.</p>
+    </li>
+
+    <li>
+      <h3>Start the worktree session</h3>
+      <p class="where">from any directory inside the repo</p>
+<pre><code>cd ~/Projects/Github/lukaskellerstein/ProtoBot
+claude -w lukas/34-git-integration</code></pre>
+      <p>The <code>WorktreeCreate</code> hook does the rest:</p>
+      <ul>
+        <li>fetches <code>upstream/main</code></li>
+        <li>creates <code>.worktrees/lukas/34-git-integration</code> on a new branch <code>lukas/34-git-integration</code>, cut from <code>upstream/main</code>, never from fork <code>main</code></li>
+        <li>copies <code>.claude/settings.json</code>, <code>hooks/</code>, <code>rules/</code> and <code>CLAUDE.md</code> into it, so the guard and the sandbox work there</li>
+        <li>links the five worktree skills to the main checkout</li>
+      </ul>
+      <p>The first line of the session must say <em>Worktree guard: worktree &hellip;/.worktrees/lukas/34-git-integration</em>. If it says <em>MAIN checkout</em>, you forgot <code>-w</code>. Exit and start again.</p>
+      <div class="note ok">
+        <span class="lab">Come back tomorrow</span>
+        <p>The same command, <code>claude -w lukas/34-git-integration</code>, adopts the existing worktree. If the directory is gone but the branch exists, the hook checks the branch out again. Two sessions can share one worktree. Re-read a file before you edit it.</p>
+      </div>
+    </li>
+
+    <li>
+      <h3>Set up the worktree</h3>
+      <p class="where">in the worktree</p>
+      <p>A fresh worktree has no gitignored files. This project is documents and scripts, and CI runs only pre-commit, so there is nothing to install. Warm up the hooks once:</p>
+<pre><code>SKIP=skillsaw uvx pre-commit run --all-files     <span class="cm"># the first run downloads the hooks, about a minute</span></code></pre>
+      <p>Prefix every local pre-commit run with <code>SKIP=skillsaw</code>. That hook fails locally today: in the main checkout on two warnings in private files, in a worktree also on the linked skills, which the tool does not follow. CI runs it on the real tree, where it passes. There is no git hook, so a plain <code>git commit</code> needs no prefix.</p>
+    </li>
+
+    <li>
+      <h3>Build the change</h3>
+      <p class="where">in the worktree</p>
+      <p>Ask Claude for the change. Which skill runs depends on what the change touches. Most changes need none of them.</p>
+      <div class="tw">
+      <table>
+        <thead><tr><th>The change</th><th>Run</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td>Touches no file under <code>docs/</code>: scripts, workflows, README, skills</td><td>none</td><td>&mdash;</td></tr>
+          <tr><td>Creates or edits a document under <code>docs/</code></td><td><code>/spec-doc docs/&lt;path&gt;</code>, once per changed document</td><td>Before the last commit. Again if a sibling document changed under you. The review bot runs the same check, so what it would find is cheaper found here.</td></tr>
+          <tr><td>Makes a decision: resolves a question in <code>open-questions.md</code>, changes what an accepted ADR decided, or the issue asks for a decision record</td><td><code>/adr</code></td><td>Before the documents that depend on the decision. It runs <code>/spec-doc</code> on the record itself, so only the other documents you touched need their own run.</td></tr>
+          <tr><td>Any change, while you build</td><td>never <code>/fullsend</code></td><td>It is a reference, not a step. Read it in <a href="#s3">section 3</a> or <a href="#s5">section 5</a>, when you are about to touch a label or send a <code>/fs-</code> command. The PR skills read it themselves.</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>Decision or specification? A decision says "we do X, not Y, because Z" about a question the hierarchy calls open. A specification says how a thing works or what it must satisfy: a contract, a component design, a flow. The first is an ADR. The second is a document under <code>docs/</code>, and <code>/spec-doc</code> is its check. When in doubt, it is a specification.</p>
+      <p>Claude edits. You commit. Before every commit:</p>
+<pre><code>SKIP=skillsaw uvx pre-commit run --all-files
+git add -A
+git commit -m "docs(#34): add git integration design"</code></pre>
+      <p>The message is <code>&lt;type&gt;(#&lt;issue&gt;): &lt;summary&gt;</code>, the same style the PR title will use. <code>AGENTS.md</code> requires every pre-commit check green before a commit.</p>
+    </li>
+
+    <li>
+      <h3>Check before the PR</h3>
+      <p class="where">in the worktree</p>
+<pre><code>git branch --show-current                <span class="cm"># lukas/34-git-integration</span>
+git status --short                       <span class="cm"># prints nothing</span>
+git log --oneline upstream/main..HEAD    <span class="cm"># only your commits, no "lukas-notes", no "new skills"</span></code></pre>
+      <p>If the log shows a private commit, the branch was cut from the wrong base. <a href="#wrongbase">Section 6 has the fix.</a> Then go to <a href="#s2">section 2</a>.</p>
+    </li>
+  </ol>
+
+  <div class="note">
+    <span class="lab">Several issues at once</span>
+    <p>One worktree each. Open another terminal and run <code>claude -w lukas/35-other-thing</code>. Git refuses one branch in two places, so the sessions cannot collide. They share <code>.git</code>, so a fetch in one is a fetch for all.</p>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="s2">
+  <span class="sec-n">02</span>
+  <h2>Open the pull request</h2>
+  <div class="session"><b>Session</b> <span>the worktree of the branch</span></div>
+
+  <ol class="steps">
+
+    <li>
+      <h3>Get the tree clean</h3>
+      <p class="where">in the worktree</p>
+      <p><code>git status --short</code> must print nothing. Commit or stash. Claude will not commit for you, and <code>/pr-create</code> stops on a dirty tree.</p>
+    </li>
+
+    <li>
+      <h3>Type <code>/pr-create</code></h3>
+      <p class="where">in the worktree</p>
+      <p>It runs these in order and stops on the first failure with the fix:</p>
+      <ol>
+        <li>Checks: the branch is <code>lukas/&hellip;</code>, the tree is clean, and no private file is in the diff (<code>lukas/</code>, <code>.claude/</code>, the private skills).</li>
+        <li><code>git fetch upstream --prune</code>, <code>git rebase upstream/main</code>, <code>SKIP=skillsaw uvx pre-commit run --all-files</code>. Nothing goes out red.</li>
+        <li><code>git push -u origin lukas/&lt;slug&gt;</code> &mdash; once, to the fork. Never to upstream.</li>
+        <li>Opens the PR against <code>redhat-et/protobot</code>, base <code>main</code>, head <code>lukaskellerstein:lukas/&lt;slug&gt;</code>. Title <code>&lt;type&gt;(#&lt;issue&gt;): &lt;summary&gt;</code>. Body: what changed, why, how it was tested, then <code>Closes #&lt;issue&gt;</code>. Not a draft. No labels.</li>
+        <li>Waits for CI with <code>gh pr checks --watch</code>, reports the URL and the result, and stops.</li>
+      </ol>
+      <p>By hand, if you want to see it:</p>
+<pre><code>git fetch upstream --prune &amp;&amp; git rebase upstream/main
+SKIP=skillsaw uvx pre-commit run --all-files
+git push -u origin lukas/34-git-integration
+gh pr create --repo redhat-et/protobot --base main \
+  --head lukaskellerstein:lukas/34-git-integration \
+  --title "docs(#34): add git integration design" --body-file body.md
+gh pr checks &lt;N&gt; --repo redhat-et/protobot --watch</code></pre>
+    </li>
+
+    <li>
+      <h3>Write down the PR number, then wait</h3>
+      <p class="where">on GitHub</p>
+      <p>The review bot starts the moment the PR opens. It needs 30 to 45 minutes and costs 3 to 8 dollars. It posts a sticky comment, a formal review that says <em>changes requested</em> or <em>approved</em>, and labels such as <code>ready-for-merge</code> or <code>risk/low</code>.</p>
+      <p>The fix bot never runs on a PR from the fork. Your PR is one. So nobody pushes to your branch but you.</p>
+      <div class="note stop">
+        <span class="lab">Do not push again yet</span>
+        <p>Every push starts a new review run and cancels the one still running. Wait for the review, then go to <a href="#s3">section 3</a>.</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="note warn">
+    <span class="lab">Protected paths</span>
+    <p>If the diff touches <code>.github/</code>, <code>.pre-commit-config.yaml</code>, <code>AGENTS.md</code>, <code>CLAUDE.md</code> or another path on the Fullsend protected list, the bot never approves on its own. Name the issue that authorizes the change in the PR body. A maintainer must approve either way, so this changes nothing in the process, only in the bot's verdict.</p>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="s3">
+  <span class="sec-n">03</span>
+  <h2>Answer the review on your PR</h2>
+  <div class="session"><b>Session</b> <span>the worktree of the PR branch. Gone? <code>claude -w lukas/&lt;slug&gt;</code> checks the branch out again.</span></div>
+
+  <p>This is a loop. One round is: the review lands, you run the skill, it pushes once, the bot reviews again. The skill has one stop in the middle, and it knows when the loop is over.</p>
+
+  <ol class="steps">
+
+    <li>
+      <h3>Wait until the round has landed</h3>
+      <p class="where">on GitHub</p>
+      <p>Best: start when the bot review is in and no run is still going. One round then answers everything at once. The bot's last status comment says <em>Finished Review</em>. If a human also reviewed, wait for both.</p>
+    </li>
+
+    <li>
+      <h3>Type <code>/pr-update N</code> <span class="stop-here">stops once</span></h3>
+      <p class="where">in the worktree &mdash; N is the PR number</p>
+      <p>Step 1, collect: the PR state, CI, every unresolved thread, bot findings that have no thread, human reviews, and how far the branch is behind <code>upstream/main</code>.</p>
+      <p>Step 2, judge: writes <code>.reviews/pr-N/update-&lt;round&gt;.html</code> and stops. Open that file in the browser.</p>
+    </li>
+
+    <li>
+      <h3>Read the report, then say yes</h3>
+      <p class="where">in the browser, then in the session</p>
+      <p>The table has one row per finding: ID, source, <code>file:line</code>, the claim, a verdict, importance, the planned action.</p>
+      <div class="tw">
+      <table>
+        <thead><tr><th>Verdict</th><th>Means</th><th>Reply the skill will post</th></tr></thead>
+        <tbody>
+          <tr><td><code>valid</code></td><td>right, and worth a change</td><td><code>Fixed in &lt;sha&gt;: &hellip;</code></td></tr>
+          <tr><td><code>done</code></td><td>the head already has it</td><td><code>Already in &lt;sha&gt;: &hellip;</code></td></tr>
+          <tr><td><code>not-valid</code></td><td>wrong, or the change costs more than it gives</td><td><code>Not changed: &lt;reason&gt;</code></td></tr>
+          <tr><td><code>question</code></td><td>a human asked something</td><td>the answer</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>Disagree with a verdict? Say so. Claude edits the report and stops again. A plain <em>yes</em> is the go, and it covers the commit and the push.</p>
+      <p>From round 3 the skill tightens: only human findings and bot findings of severity <code>high</code> or <code>critical</code> are fixed. The rest get <em>Not changed: Round 3: style only, not worth another review run.</em> The report says when this is in force.</p>
+    </li>
+
+    <li>
+      <h3>On yes, the skill does the round</h3>
+      <p class="where">in the worktree and on GitHub</p>
+      <ol>
+        <li>Makes the changes the report lists.</li>
+        <li>If the branch is a day or more behind <code>upstream/main</code>, or has a conflict: <code>git fetch upstream &amp;&amp; git rebase upstream/main</code>.</li>
+        <li><code>SKIP=skillsaw uvx pre-commit run --all-files</code>. Nothing goes out red.</li>
+        <li>One commit: <code>&lt;type&gt;(#&lt;issue&gt;): address review round &lt;k&gt;</code>. This is the one place Claude commits, on your yes.</li>
+        <li>Replies in every thread with the words from the report, then resolves it. All of them, <code>not-valid</code> included. Bot findings without a thread get one top-level comment.</li>
+        <li>Pushes once. <code>--force-with-lease</code> after a rebase, plain push otherwise.</li>
+        <li>If a human has an open <em>changes requested</em>, asks that person for a re-review. A push never clears it. Only they can.</li>
+        <li>Writes the round into <code>.reviews/pr-N/state.json</code> and reports.</li>
+      </ol>
+    </li>
+
+    <li>
+      <h3>Wait for the next review, then decide</h3>
+      <p class="where">on GitHub, 30 to 45 minutes</p>
+      <div class="tw">
+      <table>
+        <thead><tr><th>What came back</th><th>Do</th></tr></thead>
+        <tbody>
+          <tr><td>The bot approved (<code>ready-for-merge</code>) and no human thread is open</td><td>Stop. Ask a maintainer for the approval. <a href="#s4">Section 4.</a></td></tr>
+          <tr><td>Round 3 or later, and only bot style findings</td><td>Stop. Do not run the skill again. Ask a maintainer for the approval and say the bot's remaining findings are answered in the threads.</td></tr>
+          <tr><td>A human requested changes</td><td>Read their comments. Then <code>/pr-update N</code> again.</td></tr>
+          <tr><td>The bot requested changes, round 1 or 2</td><td><code>/pr-update N</code> again.</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </li>
+  </ol>
+
+  <div class="note stop">
+    <span class="lab">Never on your own PR</span>
+    <p>No <code>/fs-fix</code>, no <code>/fs-review</code>, no labels. The fix bot is refused on a fork PR, and the review bot already runs on every push. Claude is the fixer here. One push per round is the whole cost control.</p>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="s4">
+  <span class="sec-n">04</span>
+  <h2>Merge</h2>
+  <div class="session"><b>Session</b> <span>GitHub, then <code>claude --no-worktree</code> for the clean-up</span></div>
+
+  <p>Merging is a click on GitHub. The part that takes time is meeting the rules on upstream <code>main</code>.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Rule on upstream <code>main</code></th><th>What it means for you</th></tr></thead>
+    <tbody>
+      <tr><td>One approval from the team <code>redhat-et/sdlc-maintainers</code></td><td>You are on the team. A self-approval does not count, so your own PR needs a colleague.</td></tr>
+      <tr><td>The check <code>CI Workflow - Success</code> must pass</td><td>That is pre-commit on the PR head. <code>/pr-create</code> and <code>/pr-update</code> keep it green.</td></tr>
+      <tr><td>The merge goes through the merge queue</td><td>The button says <em>Merge when ready</em>. The queue runs CI once more and merges.</td></tr>
+      <tr><td>An approval survives later pushes</td><td>A commit pushed after the approval merges under it. Good for a rebase. Dangerous on a bot PR, see B below.</td></tr>
+      <tr><td>Bot labels are lights, not gates</td><td><code>ready-for-merge</code> from the bot does not merge anything. A human approval does.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>A. Your own PR</h3>
+  <ol class="steps">
+    <li>
+      <h3>Get the approval</h3>
+      <p class="where">on GitHub</p>
+      <p>Request a reviewer from the team on the PR page, or:</p>
+<pre><code>gh pr edit &lt;N&gt; --repo redhat-et/protobot --add-reviewer &lt;login&gt;</code></pre>
+      <p>Then tell the person. A review request alone is easy to miss.</p>
+    </li>
+    <li>
+      <h3>Check the PR page</h3>
+      <p class="where">on GitHub</p>
+      <ul>
+        <li>The approval is there and not dismissed.</li>
+        <li><code>CI Workflow - Success</code> is green.</li>
+        <li>No conflicts. If the page says <em>This branch has conflicts</em> or <em>out of date</em>, do <a href="#s6">section 6</a> first. The approval survives the push, but one more bot review run follows.</li>
+      </ul>
+    </li>
+    <li>
+      <h3>Click <em>Merge when ready</em></h3>
+      <p class="where">on GitHub</p>
+      <p>The PR enters the merge queue, CI runs once more, and the queue merges it. From the terminal, <code>gh pr merge &lt;N&gt; --repo redhat-et/protobot</code> adds the PR to the queue in the same way. The linked issue closes if the body said <code>Closes #&lt;issue&gt;</code>.</p>
+      <p>The retro bot runs by itself on every merge and files follow-up issues labelled <code>ready-for-triage</code>. Nothing to do. It costs money, and only the kill switch stops it.</p>
+    </li>
+    <li>
+      <h3>Clean up</h3>
+      <p class="where">exit the worktree session, then claude --no-worktree in ProtoBot/</p>
+      <p>When you exit the worktree session, pick <em>remove</em>. It deletes the directory and keeps the branch. Then in the main checkout:</p>
+      <ol>
+        <li><code>/prune</code> &mdash; shows a plan: worktrees and branches whose PR merged, the fork branch, <code>.reviews/pr-N/</code>, and review worktrees <code>pr/&lt;N&gt;</code> whose PR merged or closed. Deletes on your yes.</li>
+        <li><code>/sync-fork</code> &mdash; fork <code>main</code> now contains your merged commit, on top of the private layer.</li>
+      </ol>
+      <p>By hand:</p>
+<pre><code>git worktree remove .worktrees/lukas/34-git-integration
+git branch -D lukas/34-git-integration
+git push origin --delete lukas/34-git-integration
+git fetch upstream --prune &amp;&amp; git rebase upstream/main &amp;&amp; git push --force-with-lease origin main</code></pre>
+    </li>
+  </ol>
+
+  <h3>B. A colleague's PR you reviewed</h3>
+  <p>After phase 4 of <code>/pr-review</code> posted your approval (<a href="#s5">section 5</a>), the approval rule is met: you are on the team and it is not your PR. Check that CI is green and the head is still the one you approved, then click <em>Merge when ready</em>. After the merge, <code>/prune</code> in the main checkout removes the review worktree <code>.worktrees/pr/&lt;N&gt;</code> and its branch.</p>
+  <div class="note stop">
+    <span class="lab">Keep fullsend-no-fix on until the merge</span>
+    <p>An approval survives later pushes. If the label comes off, the bot loop restarts and its commits merge under your approval, unread. On PR 61 that cost three extra bot rounds on an approved commit. Remove the label only after the merge, if at all.</p>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="s5">
+  <span class="sec-n">05</span>
+  <h2>Review a colleague's PR</h2>
+  <div class="session"><b>Session</b> <span><code>claude -w pr/&lt;N&gt;</code>, run anywhere in the repo. One review worktree per PR, and every round of that PR from the same one, because the state lives in its <code>.reviews/pr-N/</code>.</span></div>
+
+  <p>The skill runs in five phases. Every write to GitHub needs a yes from you, the freeze included. It never commits or pushes. It posts to GitHub under your name, so read before you say yes. Several PRs at once are several worktrees: open another terminal and run <code>claude -w pr/&lt;M&gt;</code>.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Phase</th><th>Does</th><th>Then</th></tr></thead>
+    <tbody>
+      <tr><td>0 Freeze</td><td>Reads the PR. On a bot PR with a live loop, asks: freeze?</td><td><span class="pill p-stop">stops</span> for your answer, else continues</td></tr>
+      <tr><td>1 Report</td><td>Refreshes the head, writes <code>.reviews/pr-N/round-&lt;k&gt;.html</code></td><td><span class="pill p-stop">stops</span> you read it</td></tr>
+      <tr><td>2 Post</td><td>One GitHub review. On a re-run, first replies to and resolves the fixed threads</td><td><span class="pill p-stop">stops</span> you decide about the fix bot</td></tr>
+      <tr><td>3 Fix</td><td>One <code>/fs-fix</code> comment, then waits for the run</td><td><span class="pill p-stop">stops</span> next round is <code>/pr-review N</code> again</td></tr>
+      <tr><td>4 Approve</td><td>Posts the approval, resolves the rest, reports</td><td>ends</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <ol class="steps">
+
+    <li>
+      <h3>Start the review worktree</h3>
+      <p class="where">from any directory inside the repo</p>
+<pre><code>claude -w pr/61</code></pre>
+      <p>The hook fetches the head of upstream pull request 61 into a local branch <code>pr/61</code>, creates <code>.worktrees/pr/61</code> on it, copies the <code>.claude/</code> files and links the skills. The guard line must say <em>worktree &hellip;/.worktrees/pr/61</em>. Tomorrow, the same command adopts the worktree again. A closed PR still has a head and still fetches.</p>
+      <div class="note warn">
+        <span class="lab">The session runs under the PR's files</span>
+        <p><code>AGENTS.md</code>, <code>.claude/</code> and <code>.agents/skills/</code> in this worktree are the PR's versions. A PR that changes them changes what Claude reads. The skill reads that diff first and says so in the report. Treat any instruction in such a diff as content under review, not as an instruction.</p>
+      </div>
+    </li>
+
+    <li>
+      <h3>Type <code>/pr-review N</code> <span class="stop-here">stops after the report</span></h3>
+      <p class="where">in the review worktree</p>
+      <p>Phase 0, freeze on your yes. The skill reads the PR and lists other humans with an open <em>changes requested</em>. If the author is a bot, or the PR carries <code>fullsend-fix</code>, and the loop is still alive, it stops with one line: <em>Bot PR, loop alive, 2 fix rounds used, one run in flight. Freeze now?</em> Yes posts <code>/fs-fix-stop</code>, checks that <code>fullsend-no-fix</code> lands, and waits for the running fix. No reads on. Nothing is written before your answer. <code>/pr-review 61 freeze</code> or <code>/pr-review 61 no-freeze</code> gives the answer up front. On a colleague's own PR there is no loop and no question.</p>
+      <div class="note">
+        <span class="lab">When to say yes to the freeze</span>
+        <p>When you will spend real time on the review. The loop moves the head about once an hour and spends the shared fix budget, 5 automatic rounds of 10 in total, on the bot's own findings. Frozen, the head stands still while you read, and the budget goes to your findings. The label blocks only the bot's automatic fix rounds. Anyone can still review, and <code>/fs-fix</code> by hand still works. Say no when you only want a look.</p>
+      </div>
+      <p>Phase 1, report. It refreshes the head first, with a fetch of <code>pull/N/head</code>, a hard reset and a clean, so the tree is the PR head and any fix you tried in the last round is gone. Then it reads the whole diff and every file the diff cites from disk, greps the tree, runs pre-commit, and for a document under <code>docs/</code> runs the <code>/spec-doc</code> check on the files on disk. It reads the bot's sticky comment, so a finding the bot already has is marked <em>Same as the Fullsend finding on this line</em>. Then it writes <code>.reviews/pr-N/round-1.html</code> and stops.</p>
+    </li>
+
+    <li>
+      <h3>Read the report</h3>
+      <p class="where">in the browser</p>
+      <p>Four parts: the header, the verdict with a table of IDs, the comments in full, and what was checked. Each comment is a <a href="https://conventionalcomments.org">Conventional Comment</a>:</p>
+      <div class="tw">
+      <table>
+        <thead><tr><th>Label</th><th>Means</th><th>Goes to the fix bot?</th></tr></thead>
+        <tbody>
+          <tr><td><code>issue (blocking)</code></td><td>must change before approval</td><td>yes</td></tr>
+          <tr><td><code>issue (non-blocking)</code></td><td>should change</td><td>yes</td></tr>
+          <tr><td><code>todo</code>, <code>chore</code></td><td>a small task</td><td>yes</td></tr>
+          <tr><td><code>suggestion</code></td><td>a better way, author decides</td><td>only the ones you name</td></tr>
+          <tr><td><code>question</code></td><td>you need an answer</td><td>never. A question needs a person</td></tr>
+          <tr><td><code>nitpick</code>, <code>praise</code>, <code>thought</code>, <code>note</code></td><td>no action</td><td>never</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>Change what you disagree with. Claude rewrites the report and stops again. A plain <em>yes</em>, <em>post it</em> or <em>agree</em> moves to phase 2. Silence is not a yes.</p>
+    </li>
+
+    <li>
+      <h3>Say yes: one review is posted</h3>
+      <p class="where">on GitHub</p>
+      <p>Phase 2 first checks that the head on GitHub is still the one in the report. If the loop moved it, you get a fresh report and another stop. Then it posts one review with one inline comment per finding. The state is <em>changes requested</em> when a comment blocks, else <em>comment</em>. It never approves here. Then it stops and asks: does the fix bot run?</p>
+    </li>
+
+    <li>
+      <h3>Decide about the fix bot</h3>
+      <p class="where">on GitHub</p>
+      <p><strong>Same-repo PR</strong>, the usual case for a bot PR on branch <code>agent/&hellip;</code>: say yes. Phase 3 posts one <code>/fs-fix</code> comment that names the IDs to handle and tells the bot how to fetch the inline comments, because the bot cannot read them on its own. It polls for <em>Finished Fix</em>, reads the bot's <strong>Fixed</strong> and <strong>Disagreed</strong> lists, and stops.</p>
+      <p><strong>PR from a fork</strong>, a colleague's own branch on their fork: the fix bot is refused. Tell the author the review is there. They fix, they push, you re-review.</p>
+      <p>Your own review never wakes the fix bot. Only the bot's own verdict or a <code>/fs-fix</code> does. The bot reads only the text after <code>/fs-fix</code> and the bot's latest review body. Never two <code>/fs-fix</code> at once. Caps: 5 bot rounds, 10 in total.</p>
+    </li>
+
+    <li>
+      <h3>Next round: <code>/pr-review N</code> again</h3>
+      <p class="where">in the review worktree, the same one as round 1</p>
+      <p>The report now has three parts in this order: fixed, still open with what is still missing, new. IDs continue where they stopped. On your yes, phase 2 first replies <em>Fixed in &lt;sha&gt;</em> in every fixed thread and resolves it, then posts the new round as one review. A thread the bot disagreed with needs your words: it asks you.</p>
+      <p>Repeat until nothing blocks.</p>
+    </li>
+
+    <li>
+      <h3>Approve, by name</h3>
+      <p class="where">in the review worktree</p>
+      <p>Say <em>approve PR N</em>. Phase 4 checks that the head you read is still the head on GitHub, puts <code>fullsend-no-fix</code> on if it is not yet there, posts an approval that names the SHA, resolves your fixed threads, and leaves the label on. It says why in the report. Then <a href="#s4">section 4 B</a>.</p>
+      <p>When you exit the session, pick <em>keep</em>. The worktree holds the reports and the state, and the PR is not merged yet. After the merge, <code>/prune</code> in the main checkout removes it and its branch.</p>
+    </li>
+  </ol>
+
+  <h3>By hand, when you need one command</h3>
+<pre><code>REPO=redhat-et/protobot; PR=&lt;N&gt;
+gh pr comment "$PR" --repo "$REPO" --body '/fs-fix-stop'        <span class="cm"># freeze the loop. Whole comment, nothing after it</span>
+gh pr comment "$PR" --repo "$REPO" --body-file fs-fix.md       <span class="cm"># first line starts with /fs-fix, your instructions after</span>
+gh pr view "$PR" --repo "$REPO" --json labels,reviewDecision   <span class="cm"># did the label land, what is the state</span>
+gh pr review "$PR" --repo "$REPO" --approve --body "Approved at &lt;sha&gt;."</code></pre>
+  <p>A <code>/fs-</code> command is read only as the first word of a new top-level comment. Not in a thread reply, not in a review body, not in an edit. A command you may not send fails silently, so check the label, not the exit code. The full list of <code>gh</code> commands, thread queries included, is in <code>/fullsend</code>.</p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="s6">
+  <span class="sec-n">06</span>
+  <h2>Rebase your PR, and take upstream changes</h2>
+  <div class="session"><b>Session</b> <span>the worktree of the PR branch</span></div>
+
+  <p>Rebase when you must, not every day. Each rebase is a push, and each push is one bot review run. Reasons to rebase now:</p>
+  <ul>
+    <li>The PR page says <em>conflicts</em> or <em>out of date</em>.</li>
+    <li>A change you depend on merged upstream.</li>
+    <li>CI or pre-commit changed on <code>main</code> and your head fails it.</li>
+    <li>The branch is a day or more behind: <code>git fetch upstream &amp;&amp; git rev-list --count HEAD..upstream/main</code> is large.</li>
+  </ul>
+
+  <h3>Option A &mdash; let <code>/pr-update N</code> do it</h3>
+  <p>When comments are waiting anyway, this is the cheaper route. The skill rebases when the branch is a day or more behind or has a conflict, and its one push carries the rebase and the fixes. One review run instead of two.</p>
+
+  <h3>Option B &mdash; by hand</h3>
+  <ol class="steps">
+    <li>
+      <h3>Fetch and rebase</h3>
+      <p class="where">in the worktree, tree clean</p>
+<pre><code>git fetch upstream --prune
+git rebase upstream/main</code></pre>
+      <p>A conflict stops the rebase and <code>git status</code> lists the files. For each one: edit, then <code>git add &lt;file&gt;</code>, then <code>git rebase --continue</code>. To give up: <code>git rebase --abort</code> puts the branch back as it was.</p>
+    </li>
+    <li>
+      <h3>Check and test</h3>
+      <p class="where">in the worktree</p>
+<pre><code>SKIP=skillsaw uvx pre-commit run --all-files
+git merge-base --is-ancestor upstream/main HEAD &amp;&amp; echo "on top of upstream"
+git log --oneline upstream/main..HEAD          <span class="cm"># only your commits</span></code></pre>
+    </li>
+    <li>
+      <h3>Push with a lease</h3>
+      <p class="where">in the worktree</p>
+<pre><code>git push --force-with-lease</code></pre>
+      <p>The lease refuses the push if something else moved your branch on the fork. Nobody should. If it is refused, <code>git fetch origin</code> and look at <code>git log HEAD..origin/lukas/&lt;slug&gt;</code> before you push again. Never a plain <code>--force</code>.</p>
+      <p>The push starts a bot review run. An existing human approval survives it.</p>
+    </li>
+  </ol>
+
+  <div class="note warn">
+    <span class="lab">Rebase, never merge</span>
+    <p>Do not <code>git merge upstream/main</code> into the branch. The repository convention is a rebase, and a merge commit puts upstream's history into your PR's commit list. Upstream's <code>rebase-pr</code> skill is hidden by <code>skillOverrides</code>. It described the generic process, and its first step created a worktree, which your rules forbid. Use the commands above, or option A.</p>
+  </div>
+
+  <h3 id="wrongbase">The PR diff shows <code>lukas/</code> or <code>.claude/</code></h3>
+  <p>The branch was cut from fork <code>main</code>, not from <code>upstream/main</code>. The private commits come first in the log. Move only your commits:</p>
+<pre><code>git log --oneline upstream/main..HEAD            <span class="cm"># private commits first, then yours</span>
+git rebase --onto upstream/main &lt;sha of the last private commit&gt;
+git push --force-with-lease</code></pre>
+  <p>Do not use <code>origin/main</code> as the cut point. It moves with every <code>/sync-fork</code>, and then the private commits ride along.</p>
+
+  <h3>The fork's <code>main</code> is behind</h3>
+  <p>That is a separate thing. Worktrees never branch from fork <code>main</code>, so an old fork <code>main</code> does not touch a PR. It only makes your notes stale on GitHub. In the main checkout, <code>/sync-fork</code> rebases it, pushes it, and lists which worktrees are behind <code>upstream/main</code> and by how many commits. Never press <em>Sync fork</em> on GitHub. It merges, and the daily rebase then fights it.</p>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="rules">
+  <span class="sec-n">07</span>
+  <h2>Rules that apply everywhere</h2>
+
+  <ul>
+    <li><strong>Claude never commits.</strong> One exception: step 3 of <code>/pr-update</code>, on your yes to its report.</li>
+    <li><strong>One push per round.</strong> Every push is one bot review run: 30 to 45 minutes, 3 to 8 dollars. A second push cancels the first run, so three quick pushes cost one run and give one review.</li>
+    <li><strong>Never a plain <code>--force</code>.</strong> Always <code>--force-with-lease</code>.</li>
+    <li><strong>Never cut a branch from fork <code>main</code>.</strong> The hook cuts from <code>upstream/main</code>. A branch made by hand uses <code>git worktree add -b lukas/&lt;slug&gt; .worktrees/lukas/&lt;slug&gt; upstream/main</code>.</li>
+    <li><strong>Never the <em>Sync fork</em> button.</strong> <code>/sync-fork</code> instead.</li>
+    <li><strong>Never a <code>/fs-</code> command on your own PR.</strong> The fix bot is refused on a fork PR, and the review bot already runs on every push.</li>
+    <li><strong>Keep <code>fullsend-no-fix</code> on a bot PR</strong> from the moment you freeze it until the merge. At the latest, the approval puts it on.</li>
+    <li><strong>Never commit or push on a <code>pr/&lt;N&gt;</code> branch.</strong> It is someone else's head. The next review round resets it hard, and a fix you tried there is gone on purpose.</li>
+    <li><strong>Edit only where the guard line says.</strong> A worktree session edits its worktree. A <code>--no-worktree</code> session edits the main checkout. A plain <code>claude</code> in the main checkout reads and answers only.</li>
+    <li><strong>Private files never enter a PR:</strong> <code>lukas/</code>, <code>.claude/</code>, <code>.reviews/</code>, <code>.worktreeinclude</code>, and the eight private skills. <code>/pr-create</code> checks. <code>/sync-fork</code> keeps the list in <code>.git/info/exclude</code> complete.</li>
+    <li><strong>Nothing goes out red.</strong> <code>SKIP=skillsaw uvx pre-commit run --all-files</code> before every commit and every push. The one hook you skip is <code>skillsaw</code>: it fails locally on the private files, and in a worktree also on the linked skills. CI runs it on the real tree.</li>
+  </ul>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="wrong">
+  <span class="sec-n">08</span>
+  <h2>When it goes wrong</h2>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>gh</code> says the token in keyring is invalid, or a skill fails on the first <code>gh</code> call</td>
+        <td><code>gh auth login -h github.com</code>. Every GitHub step in every skill needs it.</td>
+      </tr>
+      <tr>
+        <td>The guard line says <em>MAIN checkout</em> but you wanted a branch</td>
+        <td>Exit. <code>claude -w lukas/&lt;n&gt;-&lt;slug&gt;</code>.</td>
+      </tr>
+      <tr>
+        <td><code>claude -w pr/N</code> says <em>cannot fetch upstream pull request N</em></td>
+        <td>The number is wrong, or the network is down. Check with <code>gh pr view N --repo redhat-et/protobot</code>. The hook fetches from <code>upstream</code>, so <code>git remote -v</code> must list it.</td>
+      </tr>
+      <tr>
+        <td>Claude's <code>git fetch</code> or <code>git push</code> prints <code>failed to store: 100001</code> or <code>Operation not permitted</code></td>
+        <td>The sandbox blocks the keychain helper and writes under <code>.agents/skills</code>. Let Claude re-run that one command with the sandbox off when it asks, or run it yourself: type <code>! git push --force-with-lease</code> in the prompt.</td>
+      </tr>
+      <tr>
+        <td><code>git status</code> in the main checkout shows <code>D .agents/skills/&lt;upstream skill&gt;/SKILL.md</code></td>
+        <td>An upstream skill file vanished from disk. Seen three times on 10 September 2026, cause unknown. Restore it before you commit: <code>git checkout -- .agents/skills/&lt;name&gt;/SKILL.md</code>. A private commit must never delete an upstream file.</td>
+      </tr>
+      <tr>
+        <td><code>/pr-create</code> says a private file is in the diff</td>
+        <td>Wrong base. <a href="#wrongbase">Section 6, the wrong-base fix.</a></td>
+      </tr>
+      <tr>
+        <td>A <code>/fs-</code> command did nothing</td>
+        <td>It must be the first word of a new top-level comment, from an account with write access. Then open the Actions tab, the newest <em>fullsend</em> run, the Route job: it prints the stage it picked or <em>No stage matched</em>.</td>
+      </tr>
+      <tr>
+        <td><code>--force-with-lease</code> is refused</td>
+        <td>Something moved the branch on the fork. <code>git fetch origin</code>, then <code>git log HEAD..origin/lukas/&lt;slug&gt;</code>. Look before you push again.</td>
+      </tr>
+      <tr>
+        <td>pre-commit is red</td>
+        <td>Fix what it reports and run it again. Most hooks fix the file themselves; commit the result.</td>
+      </tr>
+      <tr>
+        <td>The bot approved, but the PR still says <em>changes requested</em></td>
+        <td>A human requested changes and a push never clears that. Ask that person for a re-review.</td>
+      </tr>
+      <tr>
+        <td>The fix bot stopped on a colleague's PR with <code>needs-human</code></td>
+        <td>Its automatic rounds are nearly used up. Take over: <code>/pr-review N</code> for a round, and hand-written <code>/fs-fix &lt;instructions&gt;</code> counts against the cap of 10.</td>
+      </tr>
+      <tr>
+        <td><code>git worktree remove</code> refuses</td>
+        <td>Another session holds the lock. Close it first. Do not delete the directory by hand.</td>
+      </tr>
+      <tr>
+        <td>A run finished but the bot posted nothing</td>
+        <td>Its output failed the schema check, or the post step failed. The completion comment names the reason. Nothing to fix on your side.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>More: <a href="fork-manual.html#recover">Fork Manual, section 10</a> for git recovery, and <a href="../fullsend-setup/02-detailed-protobot-agent-pipeline.html#s12">Agent Pipeline, section 12</a> for the bots.</p>
+</section>
+
+<footer>
+  <p>Written against the repository on 10 September 2026: the hooks in <code>.claude/hooks/</code>, the eight private skills, <code>.worktreeinclude</code>, <code>.git/info/exclude</code>, and the Fullsend reference at v0.40.0. <code>gh</code> was not logged in at the time, so the merge rules come from the Fullsend reference and the notes of 9 September, not from a live query.</p>
+</footer>
+
+</main>
+</div>
+</div>
+</body>
+</html>

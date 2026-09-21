@@ -74,8 +74,9 @@ finding in full with the planned reply. Then stop and name the file.
 1. Make the changes in the worktree. Keep to what the report says.
 2. If the branch is a day or more behind `upstream/main`, or has a
    conflict: `git fetch upstream && git rebase upstream/main`.
-3. `pre-commit run --all-files`, and the tests if there are any. Nothing
-   goes out red.
+3. `SKIP=skillsaw uvx pre-commit run --all-files`, and the tests if there are
+   any. Nothing goes out red. `skillsaw` fails on the linked skills in a
+   worktree; CI runs it.
 4. One commit: `<type>(#<issue>): address review round <k>`, with the IDs
    in the body.
 5. Reply in every thread with the words from the report, then resolve it.
