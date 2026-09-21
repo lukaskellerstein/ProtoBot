@@ -153,8 +153,10 @@ Change nothing else in those files.
 ## 6. Lint
 
 ```bash
-pre-commit run --files docs/decisions/NNNN-<slug>.md <every file step 5 touched>
+SKIP=skillsaw uvx pre-commit run --files docs/decisions/NNNN-<slug>.md <every file step 5 touched>
 ```
+
+`skillsaw` fails on the linked skills in a worktree; CI runs it.
 
 Fix what it reports and run it again. Then stop.
 

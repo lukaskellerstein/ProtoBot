@@ -19,11 +19,15 @@ one remote action is deleting a branch on the fork.
 The Claude Code remove hook keeps the branch on purpose: the branch is
 the pull request. Once the pull request is merged or closed, nothing
 needs the branch. Subagent worktrees at `.worktrees/agent-<hex>` are
-created by the create hook and removed by nobody. Both kinds end here.
+created by the create hook and removed by nobody. Review worktrees at
+`.worktrees/pr/<N>` on branch `pr/<N>` hold the head of someone else's
+pull request and the reports in `.reviews/pr-<N>/`; once that pull
+request is merged or closed nothing needs them. All three kinds end
+here.
 
 | Step | Does | Then |
 |------|------|------|
-| 1. Inventory | Every worktree and every `lukas/*` and `agent-*` branch, with its pull request state | continues |
+| 1. Inventory | Every worktree and every `lukas/*`, `agent-*` and `pr/*` branch, with its pull request state | continues |
 | 2. Plan | A table: remove, ask, keep, each with its reason | stops. You read it |
 | 3. Apply | Removes and deletes what the plan says | reports |
 
@@ -37,14 +41,22 @@ git fetch upstream --prune
 git fetch origin --prune
 git worktree prune
 git worktree list --porcelain
-git branch --list 'lukas/*' 'agent-*' --format='%(refname:short)'
+git branch --list 'lukas/*' 'agent-*' 'pr/*' --format='%(refname:short)'
 git branch -r --list 'origin/lukas/*' 'origin/agent-*' --format='%(refname:short)'
 gh pr list --repo redhat-et/protobot --author @me --state all --limit 100 \
   --json number,state,headRefName,mergedAt,url
 ```
 
 Match pull requests to branches on `headRefName`. One `gh` call, then
-local matching. Do not query per branch.
+local matching. Do not query per `lukas/*` branch.
+
+A `pr/<N>` branch is a review worktree. Its pull request is not yours,
+so it is not in that list, and its number is in the name. One call per
+`pr/*` branch; there are few:
+
+```bash
+gh pr view "$N" --repo redhat-et/protobot --json number,state,url,mergedAt
+```
 
 For each worktree except the main checkout, and for each branch:
 
@@ -62,12 +74,19 @@ Classify:
 | open | PR state `OPEN` | keep | — |
 | in progress | no PR, unique commits above zero, or dirty | keep | list it |
 | merged | PR state `MERGED`, worktree clean | remove | worktree, local branch, fork branch, `.reviews/pr-<N>/` |
+| review done | `pr/*`, PR state `MERGED` or `CLOSED`, worktree clean | remove | worktree, local branch. The reports inside go with the worktree |
+| review open | `pr/*`, PR state `OPEN` | keep | — |
 | agent leftover | `agent-*`, zero unique commits, clean | remove | worktree, local branch |
 | closed | PR state `CLOSED`, not merged | ask | same as merged |
 | empty | no PR, zero unique commits, clean | ask | worktree, local branch, fork branch if any |
 | dirty but done | merged or closed, but dirty | ask | show `git status --short` first |
 | agent with work | `agent-*`, unique commits or dirty | ask | show `git log --oneline upstream/main..<branch>` |
 | fork only | `origin/lukas/*` with no local branch | as its PR state says | fork branch only |
+
+A `pr/*` branch never has a fork branch, and its unique commits are the
+author's, not yours, so the `in progress` and `empty` rows do not apply
+to it. A dirty `pr/*` worktree holds a fix that was tried during a
+review; the `dirty but done` row still asks.
 
 Never touch: the main checkout, the branch `main`, a branch checked out
 in a locked worktree, any path outside `.worktrees/`.
@@ -110,5 +129,6 @@ on the fork after the run:
 
 ```bash
 git worktree list
+git branch --list 'pr/*'
 git branch -r --list 'origin/lukas/*'
 ```

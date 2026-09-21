@@ -12,6 +12,11 @@ files: your worktree under `.worktrees/<name>`, never the main checkout).
   not edit — [`rules/worktree.md`](rules/worktree.md).
 - Every edit lands in your own worktree (`.worktrees/<name>`, branch
   `<name>`), never in the main checkout or another worktree.
+- Two kinds of worktree. `lukas/<n>-<slug>` is your own change, cut from
+  `upstream/main`. `pr/<N>` is a review worktree: the create hook sets branch
+  `pr/<N>` to the head of upstream pull request N. Never commit or push on
+  `pr/<N>`; it is someone else's head, and `/pr-review` resets it hard at the
+  start of every round.
 - This file, `rules/`, `hooks/` and `settings.json` are tracked on the fork's
   `main` only, as part of the private layer. The upstream repository is
   `redhat-et/protobot`, and they never go into a pull request: a worktree gets

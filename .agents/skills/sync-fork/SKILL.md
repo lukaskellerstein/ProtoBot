@@ -61,6 +61,7 @@ already there.
 /.agents/skills/adr
 /.agents/skills/spec-doc
 /.agents/skills/pr-review
+/.agents/skills/worktree-update
 /.agents/skills/sync-fork
 /.agents/skills/prune
 ```
@@ -72,10 +73,12 @@ ends with `/` matches only a real directory.
 `.worktreeinclude` in the repository root lists what the
 `WorktreeCreate` hook puts into a fresh worktree. One path per line. A
 file line is copied, shell globs allowed. A line that ends with `/` is a
-directory, and the hook links it to the main checkout. The five skills
+directory, and the hook links it to the main checkout. The seven skills
 that run inside a worktree are links, so an edit on `main` is live
-everywhere at once. `pr-review`, `sync-fork` and `prune` run only in the
-main checkout and are not listed. Make sure every line below is in it.
+everywhere at once. `pr-review` runs in a review worktree,
+`.worktrees/pr/<N>`, and `worktree-update` runs in both kinds.
+`sync-fork` and `prune` run only in the main checkout and are not
+listed. Make sure every line below is in it.
 Create the file if it is missing.
 
 ```text
@@ -88,6 +91,8 @@ Create the file if it is missing.
 .agents/skills/pr-update/
 .agents/skills/adr/
 .agents/skills/spec-doc/
+.agents/skills/pr-review/
+.agents/skills/worktree-update/
 ```
 
 A new private skill means one line in the first block, and one in the
@@ -202,7 +207,8 @@ Show that and stop. Never fall back to `--force`.
 - Upstream commits that arrived: `git rev-list --count "$base_before..upstream/main"`.
 - The private layer after the rebase: `git log --oneline upstream/main..main`.
 - Worktrees that are now behind. For each branch in
-  `git worktree list --porcelain`, except `main`:
+  `git worktree list --porcelain`, except `main` and the review branches
+  `pr/*`, which hold someone else's head:
 
   ```bash
   git rev-list --count "<branch>..upstream/main"
