@@ -6,6 +6,11 @@
       "ExitWorktree"
     ]
   },
+  "skillOverrides": {
+    "pull-request": "off",
+    "rebase-pr": "off",
+    "review-pr": "off"
+  },
   "hooks": {
     "WorktreeCreate": [
       {

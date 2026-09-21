@@ -57,10 +57,14 @@ Open `AGENTS.md` at the head you work on. If it lists a file that is not
 in this table, read that file too. The list in `AGENTS.md` wins.
 
 Read every file end to end. Not the headings, not the first screen. In
-`check` mode, read them at the pull request head:
+`check` mode the files must be the ones at the pull request head.
+`pr-review` runs this skill inside the review worktree `.worktrees/pr/<N>`,
+where the files on disk are that head, so read them from disk. Outside a
+review worktree, read them at the head without a checkout:
 
 ```bash
-git show "refs/pr/$PR:<path>"
+git fetch upstream "pull/${PR}/head:refs/pr/${PR}"
+git show "refs/pr/${PR}:<path>"
 ```
 
 While you read, note every named thing and where it is defined. Step 2
@@ -159,8 +163,10 @@ they must be added>.
 Then, in `write` mode, lint the document the way CI will:
 
 ```bash
-pre-commit run --files docs/<path>
+SKIP=skillsaw uvx pre-commit run --files docs/<path>
 ```
+
+`skillsaw` fails on the linked skills in a worktree; CI runs it.
 
 Lines of 80 characters at most, `-` list items, `_emphasis_`,
 `**strong**`, `#` headings, `---` rules, backtick fences, no trailing
