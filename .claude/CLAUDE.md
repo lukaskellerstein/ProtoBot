@@ -17,6 +17,13 @@ files: your worktree under `.worktrees/<name>`, never the main checkout).
   `pr/<N>` to the head of upstream pull request N. Never commit or push on
   `pr/<N>`; it is someone else's head, and `/pr-review` resets it hard at the
   start of every round.
+- Commit in groups on a `lukas/<n>-<slug>` branch. A pull request needs
+  several commits, not one at the end. A group is one part that stands on its
+  own: a slice of a feature, the tests for it, a doc change, a refactor. When
+  a group is done and its checks pass, stop, show the changed files and the
+  commit message (`<type>(#<issue>): <summary>`), and ask once. Commit only on
+  a yes, and never push. Then start the next group. Do not commit each small
+  edit, and do not save several groups for one commit.
 - This file, `rules/`, `hooks/` and `settings.json` are tracked on the fork's
   `main` only, as part of the private layer. The upstream repository is
   `redhat-et/protobot`, and they never go into a pull request: a worktree gets
