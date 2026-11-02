@@ -58,5 +58,3 @@ again after each compaction, and it names the state. `pwd` and
   `.env`. Install what the project's setup needs, inside the worktree. Two
   worktrees that both start the dev server collide on the port from
   `01-project-config.md`; when it is busy, pick another and say which.
-
-  aaabbb
