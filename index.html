@@ -253,14 +253,16 @@ html{scroll-padding-top:72px}
 .howto{margin-top:18px;padding:12px 16px;border:1px solid var(--hair);border-radius:12px;background:var(--surface);font-size:14px;max-width:86ch}
 .howto b{font-weight:700}
 .wiz{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--hair)}
-.wiz ol{list-style:none;margin:0;padding:9px 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.wiz ol{list-style:none;margin:0 auto;padding-top:10px;padding-bottom:10px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
 .wiz li{flex:0 0 auto}
-.wiz a{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;text-decoration:none;color:var(--muted);font:600 13.5px var(--f-body);white-space:nowrap;border:1px solid transparent}
-.wiz a:hover{color:var(--ink)}
+.wiz a{display:flex;align-items:center;gap:9px;padding:7px 14px 7px 7px;border-radius:999px;text-decoration:none;color:var(--muted);font:600 14px var(--f-body);white-space:nowrap;border:1px solid transparent}
+.wiz a:hover{color:var(--ink);border-color:var(--hair)}
 .wiz .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--hair);font:700 12px var(--f-mono);color:var(--muted);background:var(--surface)}
 .wiz a.done .n{border-color:var(--ok);color:var(--ok)}
-.wiz a[aria-current="page"]{color:var(--ink);background:var(--surface);border-color:var(--hair)}
+.wiz a[aria-current="page"]{color:var(--ink);background:var(--surface);border-color:var(--hair);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .wiz a[aria-current="page"] .n{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.wiz li+li{position:relative;padding-left:14px}
+.wiz li+li::before{content:"";position:absolute;left:0;top:50%;width:14px;height:1px;background:var(--hair)}
 .wiz a:focus-visible,.pager a:focus-visible,a.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tab[hidden]{display:none}
 .tab,.stage,section[id],h3[id]{scroll-margin-top:72px}
